@@ -13,12 +13,6 @@ export const authOptions: NextAuthOptions = {
     pages: {
         signIn: '/',
     },
-    providers: [
-        GoogleProvider({
-            clientId: GOOGLE_CLIENT_ID,
-            clientSecret: GOOGLE_CLIENT_SECRET,
-        }),
-    ],
     callbacks: {
         async redirect({ url, baseUrl }) {
             // Allow relative callback URLs
@@ -27,7 +21,6 @@ export const authOptions: NextAuthOptions = {
             if (new URL(url).origin === baseUrl) return url
             return baseUrl
         },
-        // This runs when Google redirects back to your app (server-side only)
         async signIn({ user, account, profile }) {
             // Validate that we have required profile data
             if (!profile?.email || !user.id) {
@@ -71,8 +64,14 @@ export const authOptions: NextAuthOptions = {
                 (session.user as any).id = token.id as string;
             }
             return session;
-        },
+        }
     },
+    providers: [
+        GoogleProvider({
+            clientId: GOOGLE_CLIENT_ID,
+            clientSecret: GOOGLE_CLIENT_SECRET,
+        }),
+    ]
 }
 
 const handler = NextAuth(authOptions);

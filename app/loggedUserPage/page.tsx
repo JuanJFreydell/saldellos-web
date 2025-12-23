@@ -52,12 +52,20 @@ export default function LoggedUserPage() {
           <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
             User Profile
           </h1>
-          <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
-          >
-            Sign Out
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push("/listar")}
+              className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+            >
+              Create Listing
+            </button>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">

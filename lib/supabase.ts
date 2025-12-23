@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { User, InsertUser, UpdateUser } from '@/supabase/types/users'
+import type { Listing } from '@/supabase/types/listings'
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
@@ -24,13 +26,52 @@ export const supabaseAdmin = secretKey
     })
   : null
 
+
+
+
+
+export async function createListing(listingData: Listing){
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client not configured. Set SUPABASE_SECRET_KEY in .env.local')
+  }
+  const { data, error } = await supabaseAdmin
+  .from('listings')
+  .insert({
+    listing_id: listingData.listing_id,
+    owner_id: listingData.owner_id,
+    title: listingData.title,
+    description: listingData.description,
+    neighborhood_id: listingData.neighborhood_id,
+    listing_date: listingData.listing_date, // ISO timestamp string
+    number_of_prints: listingData.number_of_prints,
+    number_of_visits: listingData.number_of_visits,
+    status: listingData.status
+  })
+  .select()
+  .single()
+
+if (error) {
+  console.error('Error creating listing:', error)
+  return null
+}
+
+return data
+}
+
+
+// email: profile.email,
+// nextauth_id: user.id,
+// first_names: givenName,
+// last_names: familyName,
+// status: 'active',
+
 // Upsert user: checks if user exists by email, creates if not, updates if exists
 // IMPORTANT: Use this in API routes or server components only (uses admin client)
 export async function upsertUser(userData: {
   email: string;
   nextauth_id: string;
   first_names?: string | null;
-  last_names?: string | null;
+  last_names?: string | null;  
   status?: string;
 }): Promise<User | null> {
   if (!supabaseAdmin) {
@@ -86,4 +127,3 @@ export async function upsertUser(userData: {
     return data
   }
 }
-
