@@ -50,6 +50,25 @@ export default function MisListadosPage() {
     }
   }
 
+  async function handleDeleteListing(listingId: string) {
+    try {
+      const response = await fetch(`/api/manageListings?listing_id=${listingId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete listing");
+      }
+
+      // Refresh the page to show updated listings
+      router.refresh();
+      fetchListings();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete listing");
+      console.error("Error deleting listing:", err);
+    }
+  }
+
   if (status === "loading" || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -99,7 +118,11 @@ export default function MisListadosPage() {
 
         <div className="space-y-4">
           {listings.map((listing) => (
-            <ListingCard key={listing.listing_id} listing={listing} />
+            <ListingCard 
+              key={listing.listing_id} 
+              listing={listing} 
+              onDelete={handleDeleteListing}
+            />
           ))}
         </div>
       </main>
@@ -107,7 +130,13 @@ export default function MisListadosPage() {
   );
 }
 
-function ListingCard({ listing }: { listing: ListingMetadata }) {
+function ListingCard({ 
+  listing, 
+  onDelete 
+}: { 
+  listing: ListingMetadata; 
+  onDelete: (listingId: string) => void;
+}) {
   return (
     <div className="rounded-lg bg-white shadow-md dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700">
       <div className="flex flex-row">
@@ -185,6 +214,16 @@ function ListingCard({ listing }: { listing: ListingMetadata }) {
                 </p>
               </div>
             </div>
+          </div>
+          
+          {/* Remove Listing Button */}
+          <div className="mt-4">
+            <button
+              onClick={() => onDelete(listing.listing_id)}
+              className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
+            >
+              Remove Listing
+            </button>
           </div>
         </div>
       </div>

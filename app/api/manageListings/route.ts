@@ -255,3 +255,115 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    // 1. Authenticate user
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: "Database not configured" },
+        { status: 500 }
+      );
+    }
+
+    // 2. Get user from database
+    const { data: user, error: userError } = await supabaseAdmin
+      .from("users")
+      .select("*")
+      .eq("email", session.user.email)
+      .single();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    if (user.status !== "active") {
+      return NextResponse.json(
+        { error: "Account is not active" },
+        { status: 403 }
+      );
+    }
+
+    // 3. Get listing_id from query parameters
+    const { searchParams } = new URL(request.url);
+    const listingId = searchParams.get("listing_id");
+
+    if (!listingId) {
+      return NextResponse.json(
+        { error: "listing_id is required" },
+        { status: 400 }
+      );
+    }
+
+    // 4. Verify listing exists and user is the owner
+    const { data: listing, error: listingError } = await supabaseAdmin
+      .from("listings")
+      .select("listing_id, owner_id")
+      .eq("listing_id", listingId)
+      .single();
+
+    if (listingError || !listing) {
+      return NextResponse.json(
+        { error: "Listing not found" },
+        { status: 404 }
+      );
+    }
+
+    // 5. Verify user is the owner
+    if (listing.owner_id !== user.user_id) {
+      return NextResponse.json(
+        { error: "Forbidden: You are not the owner of this listing" },
+        { status: 403 }
+      );
+    }
+
+    // 6. Delete from listings_meta_data first
+    const { error: metaDeleteError } = await supabaseAdmin
+      .from("listings_meta_data")
+      .delete()
+      .eq("listing_id", listingId);
+
+    if (metaDeleteError) {
+      console.error("Error deleting listing meta data:", metaDeleteError);
+      return NextResponse.json(
+        { error: "Failed to delete listing meta data" },
+        { status: 500 }
+      );
+    }
+
+    // 7. Delete from listings table
+    const { error: listingDeleteError } = await supabaseAdmin
+      .from("listings")
+      .delete()
+      .eq("listing_id", listingId);
+
+    if (listingDeleteError) {
+      console.error("Error deleting listing:", listingDeleteError);
+      return NextResponse.json(
+        { error: "Failed to delete listing" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Listing deleted successfully",
+        listing_id: listingId,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error in deleteListing endpoint:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
