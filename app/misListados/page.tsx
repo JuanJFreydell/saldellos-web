@@ -122,6 +122,7 @@ export default function MisListadosPage() {
               key={listing.listing_id} 
               listing={listing} 
               onDelete={handleDeleteListing}
+              router={router}
             />
           ))}
         </div>
@@ -132,10 +133,12 @@ export default function MisListadosPage() {
 
 function ListingCard({ 
   listing, 
-  onDelete 
+  onDelete,
+  router
 }: { 
   listing: ListingMetadata; 
   onDelete: (listingId: string) => void;
+  router: ReturnType<typeof useRouter>;
 }) {
   return (
     <div className="rounded-lg bg-white shadow-md dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700">
@@ -216,8 +219,14 @@ function ListingCard({
             </div>
           </div>
           
-          {/* Remove Listing Button */}
-          <div className="mt-4">
+          {/* Action Buttons */}
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => router.push(`/editListing?listing_id=${listing.listing_id}`)}
+              className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+            >
+              Edit Listing
+            </button>
             <button
               onClick={() => onDelete(listing.listing_id)}
               className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
