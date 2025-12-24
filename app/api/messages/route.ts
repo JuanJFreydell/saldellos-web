@@ -305,7 +305,7 @@ export async function POST(request: Request) {
         chat_id: conversationId,
         sent_by: userId,
         time_sent: timeSent,
-        messagebody: messageBody.trim(), // Use lowercase messagebody to match PostgreSQL column name
+        message_body: messageBody.trim(), // Use lowercase messagebody to match PostgreSQL column name
       })
       .select()
       .single();
