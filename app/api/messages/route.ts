@@ -239,14 +239,6 @@ export async function POST(request: Request) {
 
     const ownerId = listing.owner_id.toString();
 
-    // Prevent users from messaging themselves
-    if (userId === ownerId) {
-      return NextResponse.json(
-        { error: "You cannot message yourself" },
-        { status: 400 }
-      );
-    }
-
     // 6. Check if conversation exists between current user and listing owner for this listing
     // Search for conversations with this listing_id where either participant is the current user or owner
     const { data: existingConversations, error: conversationSearchError } = await supabaseAdmin
@@ -272,7 +264,15 @@ export async function POST(request: Request) {
     let conversationId: string;
 
     // 7. Create conversation if it doesn't exist
+    // Only prevent creating NEW conversations with yourself, but allow replying to existing ones
     if (!conversation) {
+      // Prevent users from creating new conversations with themselves
+      if (userId === ownerId) {
+        return NextResponse.json(
+          { error: "You cannot message yourself" },
+          { status: 400 }
+        );
+      }
       const { data: newConversation, error: createConversationError } = await supabaseAdmin
         .from("conversations")
         .insert({
