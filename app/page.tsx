@@ -49,7 +49,18 @@ const LOCATIONS: Record<string, CityData> = {
   },
 };
 
-const CATEGORIES = ["apartment", "house", "room", "studio", "other"];
+const CATEGORIES = [
+  "muebles",
+  "decoracion",
+  "electrodomesticos",
+  "iluminacion",
+  "textiles",
+  "accesorios",
+  "jardin",
+  "cocina",
+  "sala",
+  "dormitorio",
+];
 
 export default function Home() {
   const [listings, setListings] = useState<ListingMetadata[]>([]);
@@ -105,16 +116,6 @@ export default function Home() {
       const data = await response.json();
       const fetchedListings = data.listings || [];
       setListings(fetchedListings);
-      
-      // Apply category filter if selected
-      if (category) {
-        const filtered = fetchedListings.filter(
-          (listing: ListingMetadata) => listing.category.toLowerCase() === category.toLowerCase()
-        );
-        setAllListings(filtered);
-      } else {
-        setAllListings(fetchedListings);
-      }
       setCurrentPage(1); // Reset to first page on new search
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -173,7 +174,7 @@ export default function Home() {
     }
   };
 
-  // Filter listings by category if selected
+  // Filter listings by category on the frontend (API doesn't filter by category)
   useEffect(() => {
     if (category) {
       const filtered = listings.filter(
@@ -183,7 +184,7 @@ export default function Home() {
     } else {
       setAllListings(listings);
     }
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when filter changes
   }, [category, listings]);
 
   return (
@@ -288,11 +289,16 @@ export default function Home() {
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                   <option value="">All Categories</option>
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
+                  {CATEGORIES.map((cat) => {
+                    const displayName = cat
+                      .charAt(0)
+                      .toUpperCase() + cat.slice(1);
+                    return (
+                      <option key={cat} value={cat}>
+                        {displayName}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
