@@ -264,15 +264,7 @@ export async function POST(request: Request) {
     let conversationId: string;
 
     // 7. Create conversation if it doesn't exist
-    // Only prevent creating NEW conversations with yourself, but allow replying to existing ones
     if (!conversation) {
-      // Prevent users from creating new conversations with themselves
-      if (userId === ownerId) {
-        return NextResponse.json(
-          { error: "You cannot message yourself" },
-          { status: 400 }
-        );
-      }
       const { data: newConversation, error: createConversationError } = await supabaseAdmin
         .from("conversations")
         .insert({
