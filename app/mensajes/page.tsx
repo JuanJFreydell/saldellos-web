@@ -115,13 +115,14 @@ export default function MensagesPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          conversation_id: selectedConversation.conversation_id,
+          listing_id: selectedConversation.listing_id,
           messageBody: messageText.trim(),
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send message");
       }
 
       // Clear input and refresh conversations
@@ -129,7 +130,7 @@ export default function MensagesPage() {
       await fetchConversations();
     } catch (err) {
       console.error("Error sending message:", err);
-      alert("Error al enviar el mensaje. Por favor intenta de nuevo.");
+      alert(err instanceof Error ? err.message : "Error al enviar el mensaje. Por favor intenta de nuevo.");
     } finally {
       setSending(false);
     }

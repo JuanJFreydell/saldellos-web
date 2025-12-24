@@ -121,10 +121,10 @@ export async function GET(request: Request) {
         }
 
         // Number messages by creation time (1, 2, 3, ...)
-        // Map message_body (lowercase from DB) to message_body (camelCase for frontend)
+        // Map messagebody/message_body (from DB) to messageBody (camelCase for frontend)
         const numberedMessages = (messages || []).map((message: any, index) => ({
           ...message,
-          message_body: message.message_body || message.message_body || "", // Handle both cases
+          messageBody: message.messagebody || message.message_body || message.messageBody || "", // Handle all possible column name variations
           message_number: index + 1,
         }));
 
