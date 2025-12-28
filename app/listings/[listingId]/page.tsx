@@ -89,19 +89,37 @@ export default function ListingDetailPage() {
       setSending(true);
       setError(null);
 
-      const response = await fetch("/api/messages", {
+      // Step 1: Get or create conversation
+      const conversationResponse = await fetch(
+        `/api/conversations?listing_id=${listingId}`
+      );
+
+      if (!conversationResponse.ok) {
+        const errorData = await conversationResponse.json();
+        throw new Error(errorData.error || "Error al obtener la conversación");
+      }
+
+      const conversationData = await conversationResponse.json();
+      const conversationId = conversationData.conversation_id;
+
+      if (!conversationId) {
+        throw new Error("No se pudo obtener el ID de la conversación");
+      }
+
+      // Step 2: Send message using conversation_id
+      const messageResponse = await fetch("/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          listing_id: listingId,
+          conversation_id: conversationId,
           messageBody: messageText.trim(),
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!messageResponse.ok) {
+        const errorData = await messageResponse.json();
         throw new Error(errorData.error || "Error al enviar el mensaje");
       }
 

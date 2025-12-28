@@ -155,9 +155,8 @@ export async function GET(request: Request) {
 }
 
 //---- POST MESSAGES ----
-// validates the user and takes listing_id and message_body
-// checks if conversation exists between current user and listing owner
-// creates conversation if it doesn't exist
+// validates the user and takes conversation_id and messageBody
+// verifies the user is a participant in the conversation
 // creates a new message entry
 
 export async function POST(request: Request) {
@@ -196,12 +195,12 @@ export async function POST(request: Request) {
 
     // 3. Parse request body
     const body = await request.json();
-    const { listing_id, messageBody } = body;
+    const { conversation_id, messageBody } = body;
 
     // 4. Validate required fields
-    if (!listing_id || listing_id.trim() === "") {
+    if (!conversation_id || conversation_id.trim() === "") {
       return NextResponse.json(
-        { error: "listing_id is required" },
+        { error: "conversation_id is required" },
         { status: 400 }
       );
     }
@@ -214,109 +213,45 @@ export async function POST(request: Request) {
     }
 
     const userId = user.user_id.toString();
+    const normalizedUserId = userId.trim();
+    const normalizedConversationId = conversation_id.trim();
 
-    // 5. Get listing to find the owner
-    const { data: listing, error: listingError } = await supabaseAdmin
-      .from("listings")
-      .select("owner_id, status")
-      .eq("listing_id", listing_id)
+    // 5. Verify user is a participant in the conversation
+    const { data: conversation, error: conversationError } = await supabaseAdmin
+      .from("conversations")
+      .select("*")
+      .eq("conversation_id", normalizedConversationId)
       .single();
 
-    if (listingError || !listing) {
+    if (conversationError || !conversation) {
       return NextResponse.json(
-        { error: "Listing not found" },
+        { error: "Conversation not found" },
         { status: 404 }
       );
     }
 
-    // Check if listing is active
-    if (listing.status !== "active") {
+    // Check if user is participant_1 or participant_2 (normalize for comparison)
+    const p1 = String(conversation.participant_1 || "").trim();
+    const p2 = String(conversation.participant_2 || "").trim();
+    const isParticipant = p1 === normalizedUserId || p2 === normalizedUserId;
+
+    if (!isParticipant) {
       return NextResponse.json(
-        { error: "Listing is not active" },
-        { status: 400 }
+        { error: "Forbidden: You are not a participant in this conversation" },
+        { status: 403 }
       );
     }
 
-    const ownerId = listing.owner_id.toString();
-
-    // Normalize IDs for consistent comparison (trim whitespace, ensure string format)
-    const normalizedUserId = userId.trim();
-    const normalizedOwnerId = ownerId.trim();
-
-    // 6. Check if conversation exists between current user and listing owner for this listing
-    // Search for conversations with this listing_id
-    const { data: existingConversations, error: conversationSearchError } = await supabaseAdmin
-      .from("conversations")
-      .select("*")
-      .eq("listing_id", listing_id);
-
-    if (conversationSearchError) {
-      console.error("Error searching for conversation:", conversationSearchError);
-      return NextResponse.json(
-        { error: "Failed to search for conversation" },
-        { status: 500 }
-      );
-    }
-
-    // Find conversation where both participants match (current user and listing owner)
-    // Normalize participant IDs from database before comparison
-    let conversation = existingConversations?.find((conv) => {
-      const p1 = String(conv.participant_1 || "").trim();
-      const p2 = String(conv.participant_2 || "").trim();
-      
-      // Check if both participants match (order doesn't matter)
-      return (
-        (p1 === normalizedUserId && p2 === normalizedOwnerId) ||
-        (p1 === normalizedOwnerId && p2 === normalizedUserId)
-      );
-    });
-
-    // Prevent users from messaging themselves UNLESS a conversation already exists
-    // This allows sellers to respond to existing conversations about their listings
-    if (userId === ownerId && !conversation) {
-      return NextResponse.json(
-        { error: "You cannot message yourself" },
-        { status: 400 }
-      );
-    }
-
-    let conversationId: string;
-
-    // 7. Create conversation if it doesn't exist
-    if (!conversation) {
-      const { data: newConversation, error: createConversationError } = await supabaseAdmin
-        .from("conversations")
-        .insert({
-          participant_1: normalizedUserId,
-          participant_2: normalizedOwnerId,
-          listing_id: listing_id,
-        })
-        .select()
-        .single();
-
-      if (createConversationError || !newConversation) {
-        console.error("Error creating conversation:", createConversationError);
-        return NextResponse.json(
-          { error: "Failed to create conversation" },
-          { status: 500 }
-        );
-      }
-
-      conversation = newConversation;
-      conversationId = newConversation.conversation_id.toString();
-    } else {
-      conversationId = conversation.conversation_id.toString();
-    }
-
-    // 8. Create message entry
+    // 6. Create message entry
+    // message_id is auto-generated by the database (UUID)
     const timeSent = new Date().toISOString();
     const { data: message, error: messageError } = await supabaseAdmin
       .from("messages")
       .insert({
-        chat_id: conversationId,
-        sent_by: userId,
+        chat_id: normalizedConversationId,
+        sent_by: normalizedUserId,
         time_sent: timeSent,
-        message_body: messageBody.trim(), // Use lowercase messagebody to match PostgreSQL column name
+        message_body: messageBody.trim(),
       })
       .select()
       .single();
@@ -334,7 +269,7 @@ export async function POST(request: Request) {
         success: true,
         message: "Message created successfully",
         message_id: message.message_id,
-        conversation_id: conversationId,
+        conversation_id: normalizedConversationId,
       },
       { status: 201 }
     );

@@ -115,7 +115,7 @@ export default function MensagesPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          listing_id: selectedConversation.listing_id,
+          conversation_id: selectedConversation.conversation_id,
           messageBody: messageText.trim(),
         }),
       });
