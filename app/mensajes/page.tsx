@@ -107,6 +107,9 @@ export default function MensagesPage() {
       return;
     }
 
+    const messageTextToSend = messageText.trim();
+    const currentUserId = selectedConversation.participants.current_user.user_id;
+
     try {
       setSending(true);
       const response = await fetch("/api/messages", {
@@ -116,7 +119,7 @@ export default function MensagesPage() {
         },
         body: JSON.stringify({
           conversation_id: selectedConversation.conversation_id,
-          messageBody: messageText.trim(),
+          messageBody: messageTextToSend,
         }),
       });
 
@@ -125,9 +128,41 @@ export default function MensagesPage() {
         throw new Error(errorData.error || "Failed to send message");
       }
 
-      // Clear input and refresh conversations
+      const responseData = await response.json();
+
+      // Create the new message object to add to local state
+      const newMessage: Message = {
+        message_id: responseData.message_id,
+        chat_id: selectedConversation.conversation_id,
+        sent_by: currentUserId,
+        time_sent: new Date().toISOString(),
+        messageBody: messageTextToSend,
+        message_number: selectedConversation.messages.length + 1,
+      };
+
+      // Update local state: add the new message to the selected conversation
+      setSelectedConversation((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          messages: [...prev.messages, newMessage],
+        };
+      });
+
+      // Also update the conversations list to keep it in sync
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.conversation_id === selectedConversation.conversation_id
+            ? {
+                ...conv,
+                messages: [...conv.messages, newMessage],
+              }
+            : conv
+        )
+      );
+
+      // Clear input
       setMessageText("");
-      await fetchConversations();
     } catch (err) {
       console.error("Error sending message:", err);
       alert(err instanceof Error ? err.message : "Error al enviar el mensaje. Por favor intenta de nuevo.");
