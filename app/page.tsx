@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/Header";
 
 interface ListingMetadata {
@@ -70,6 +70,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [allListings, setAllListings] = useState<ListingMetadata[]>([]);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // Filter state
   const [city, setCity] = useState<string>("");
@@ -92,7 +93,9 @@ export default function Home() {
 
   useEffect(() => {
     // Initial load with Bogota coordinates
-    fetchListings("4.7110,-74.0721", 600);
+    fetchListings("4.7110,-74.0721", 600).then(() => {
+      setInitialLoad(false);
+    });
   }, []);
 
   async function fetchListings(coordinates: string, radius: number) {
@@ -127,9 +130,35 @@ export default function Home() {
     }
   }
 
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
+  const handleCityToggle = (selectedCity: string) => {
+    if (city === selectedCity) {
+      // Unselect city
+      setCity("");
+      setNeighborhood(""); // Clear neighborhood when city is unselected
+    } else {
+      // Select new city
+      setCity(selectedCity);
+      setNeighborhood(""); // Clear neighborhood when city changes
+    }
+  };
 
+  const handleNeighborhoodToggle = (selectedNeighborhood: string) => {
+    if (neighborhood === selectedNeighborhood) {
+      setNeighborhood("");
+    } else {
+      setNeighborhood(selectedNeighborhood);
+    }
+  };
+
+  const handleCategoryToggle = (selectedCategory: string) => {
+    if (category === selectedCategory) {
+      setCategory("");
+    } else {
+      setCategory(selectedCategory);
+    }
+  };
+
+  const handleSearch = () => {
     let coordinates: string;
     let radius: number;
 
@@ -169,6 +198,49 @@ export default function Home() {
     fetchListings(coordinates, radius);
   };
 
+  // Auto-search when city or neighborhood filters change (but not on initial load)
+  useEffect(() => {
+    if (initialLoad) return; // Don't trigger search during initial load
+
+    let coordinates: string;
+    let radius: number;
+
+    if (city && neighborhood) {
+      // Use neighborhood coordinates and radius
+      const cityData = LOCATIONS[city];
+      if (cityData) {
+        const neighborhoodData = cityData.neighborhoods[neighborhood];
+        if (neighborhoodData) {
+          coordinates = neighborhoodData.coordinates;
+          radius = neighborhoodData.radius;
+        } else {
+          // Fallback to city center
+          coordinates = cityData.center;
+          radius = cityData.radius;
+        }
+      } else {
+        coordinates = "4.7110,-74.0721";
+        radius = 600;
+      }
+    } else if (city) {
+      // Use city center coordinates and radius
+      const cityData = LOCATIONS[city];
+      if (cityData) {
+        coordinates = cityData.center;
+        radius = cityData.radius;
+      } else {
+        coordinates = "4.7110,-74.0721";
+        radius = 600;
+      }
+    } else {
+      // Default to Bogota
+      coordinates = "4.7110,-74.0721";
+      radius = 600;
+    }
+
+    fetchListings(coordinates, radius);
+  }, [city, neighborhood, initialLoad]);
+
   const handleNextPage = () => {
     if (hasNextPage) {
       setCurrentPage((prev) => prev + 1);
@@ -194,97 +266,138 @@ export default function Home() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Search Filters */}
-        <form onSubmit={handleSearch} className="mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* City Dropdown */}
-              <div>
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  City
-                </label>
-                <select
-                  id="city"
-                  value={city}
-                  onChange={(e) => {
-                    setCity(e.target.value);
-                    setNeighborhood(""); // Reset neighborhood when city changes
-                  }}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option value="">All Cities</option>
-                  <option value="Bogota">Bogota</option>
-                  <option value="Medellin">Medellin</option>
-                </select>
-              </div>
-
-              {/* Neighborhood Dropdown */}
-              <div>
-                <label
-                  htmlFor="neighborhood"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Neighborhood
-                </label>
-                <select
-                  id="neighborhood"
-                  value={neighborhood}
-                  onChange={(e) => setNeighborhood(e.target.value)}
-                  disabled={!city}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
-                >
-                  <option value="">All Neighborhoods</option>
-                  {availableNeighborhoods.map((neigh) => (
-                    <option key={neigh} value={neigh}>
-                      {neigh}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Category Dropdown */}
-              <div>
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Category
-                </label>
-                <select
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option value="">All Categories</option>
-                  {CATEGORIES.map((cat) => {
-                    const displayName = cat
-                      .charAt(0)
-                      .toUpperCase() + cat.slice(1);
-                    return (
-                      <option key={cat} value={cat}>
-                        {displayName}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              {/* Search Button */}
-              <div className="flex items-end">
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-blue-500 px-6 py-2 font-medium text-white hover:bg-blue-600 transition-colors"
-                >
-                  Search
-                </button>
-              </div>
+        {/* Search Filters - Button Based */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+          {/* City Section */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Ciudad
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(LOCATIONS).map((cityName) => {
+                const isSelected = city === cityName;
+                return (
+                  <button
+                    key={cityName}
+                    type="button"
+                    onClick={() => handleCityToggle(cityName)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      isSelected
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                    }`}
+                  >
+                    <span>{cityName}</span>
+                    {isSelected && (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </form>
+
+          {/* Neighborhood Section */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Barrio
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {city ? (
+                availableNeighborhoods.map((neigh) => {
+                  const isSelected = neighborhood === neigh;
+                  return (
+                    <button
+                      key={neigh}
+                      type="button"
+                      onClick={() => handleNeighborhoodToggle(neigh)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        isSelected
+                          ? "bg-blue-500 text-white hover:bg-blue-600"
+                          : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                      }`}
+                    >
+                      <span>{neigh}</span>
+                      {isSelected && (
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                  Selecciona una ciudad para ver los barrios
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Category Section */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Categoría
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map((cat) => {
+                const isSelected = category === cat;
+                const displayName = cat.charAt(0).toUpperCase() + cat.slice(1);
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleCategoryToggle(cat)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      isSelected
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                    }`}
+                  >
+                    <span>{displayName}</span>
+                    {isSelected && (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
         {/* Error Message */}
         {error && (
