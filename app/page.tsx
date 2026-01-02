@@ -71,7 +71,7 @@ export default function Home() {
         // Fetch Colombia
         const countriesResponse = await fetch("/api/locations/countries");
         if (!countriesResponse.ok) {
-          throw new Error("Failed to fetch countries");
+          throw new Error("Error al cargar países");
         }
         const countriesData = await countriesResponse.json();
         const colombia = countriesData.countries.find(
@@ -82,18 +82,18 @@ export default function Home() {
           // Fetch cities for Colombia
           fetchCities(colombia.country_id);
         } else {
-          setError("Colombia not found in database");
+          setError("Colombia no encontrada en la base de datos");
         }
 
         // Fetch subcategories for "para la venta"
         const subcategoriesResponse = await fetch("/api/locations/subcategories");
         if (!subcategoriesResponse.ok) {
-          throw new Error("Failed to fetch subcategories");
+          throw new Error("Error al cargar subcategorías");
         }
         const subcategoriesData = await subcategoriesResponse.json();
         setSubcategories(subcategoriesData.subcategories || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load initial data");
+        setError(err instanceof Error ? err.message : "Error al cargar los datos iniciales");
         console.error("Error fetching initial data:", err);
       }
     }
@@ -106,7 +106,7 @@ export default function Home() {
       setLoadingCities(true);
       const response = await fetch(`/api/locations/cities?country_id=${countryId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch cities");
+        throw new Error("Error al cargar ciudades");
       }
       const data = await response.json();
       setCities(data.cities || []);
@@ -125,7 +125,7 @@ export default function Home() {
           setLoadingNeighborhoods(true);
           const response = await fetch(`/api/locations/neighborhoods?city_id=${selectedCityId}`);
           if (!response.ok) {
-            throw new Error("Failed to fetch neighborhoods");
+            throw new Error("Error al cargar barrios");
           }
           const data = await response.json();
           setNeighborhoods(data.neighborhoods || []);
@@ -169,7 +169,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch listings");
+        throw new Error("Error al cargar los listados");
       }
 
       const data = await response.json();
@@ -178,7 +178,7 @@ export default function Home() {
       setTotal(data.total || 0);
       setCurrentBatch(data.batch || 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
       console.error("Error fetching listings:", err);
     } finally {
       setLoading(false);
@@ -441,7 +441,7 @@ export default function Home() {
         {loading && (
           <div className="flex items-center justify-center py-12">
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              Loading listings...
+              Cargando listados...
             </p>
           </div>
         )}
@@ -452,7 +452,7 @@ export default function Home() {
             {filteredListings.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-lg text-gray-600 dark:text-gray-400">
-                  No listings found.
+                  No se encontraron listados.
                 </p>
               </div>
             ) : (
@@ -466,8 +466,8 @@ export default function Home() {
                 {/* Pagination */}
                 <div className="flex justify-center items-center gap-4 py-8">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {filteredListings.length} of {total} listings
-                    {total > 0 && ` (Batch ${currentBatch})`}
+                    Mostrando {filteredListings.length} de {total} listados
+                    {total > 0 && ` (Lote ${currentBatch})`}
                   </p>
                   <button
                     onClick={handleNextBatch}
@@ -478,7 +478,7 @@ export default function Home() {
                         : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
                     }`}
                   >
-                    Load More
+                    Cargar más
                   </button>
                 </div>
               </>
@@ -512,7 +512,7 @@ function ListingCard({ listing }: { listing: ListingMetadata }) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-gray-400">No Image</span>
+            <span className="text-gray-400">Sin imagen</span>
           </div>
         )}
       </div>

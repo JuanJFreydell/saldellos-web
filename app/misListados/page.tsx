@@ -37,13 +37,13 @@ export default function MisListadosPage() {
       const response = await fetch("/api/manageListings");
       
       if (!response.ok) {
-        throw new Error("Failed to fetch listings");
+        throw new Error("Error al cargar los listados");
       }
       
       const data = await response.json();
       setListings(data.listings || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
       console.error("Error fetching listings:", err);
     } finally {
       setLoading(false);
@@ -57,14 +57,14 @@ export default function MisListadosPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete listing");
+        throw new Error("Error al eliminar el listado");
       }
 
       // Refresh the page to show updated listings
       router.refresh();
       fetchListings();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete listing");
+      setError(err instanceof Error ? err.message : "Error al eliminar el listado");
       console.error("Error deleting listing:", err);
     }
   }
@@ -72,7 +72,7 @@ export default function MisListadosPage() {
   if (status === "loading" || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Loading...</p>
+        <p className="text-lg">Cargando...</p>
       </div>
     );
   }
@@ -86,13 +86,13 @@ export default function MisListadosPage() {
       <main className="max-w-6xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
-            My Listings
+            Mis listados
           </h1>
           <button
             onClick={() => router.push("/loggedUserPage")}
             className="rounded-full bg-gray-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-600"
           >
-            Back to Profile
+            Volver al perfil
           </button>
         </div>
 
@@ -105,13 +105,13 @@ export default function MisListadosPage() {
         {listings.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              You don't have any listings yet.
+              Aún no tienes listados.
             </p>
             <button
               onClick={() => router.push("/listar")}
               className="mt-4 rounded-full bg-blue-500 px-6 py-2 text-white font-medium hover:bg-blue-600 transition-colors"
             >
-              Create Your First Listing
+              Crea tu primer listado
             </button>
           </div>
         )}
@@ -144,7 +144,7 @@ function ListingCard({
     <div className="rounded-lg bg-white shadow-md dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700">
       <div className="flex flex-row">
         {/* Thumbnail */}
-        <div className="w-48 h-48 flex-shrink-0">
+        <div className="w-48 h-48 shrink-0">
           {listing.thumbnail ? (
             <img
               src={listing.thumbnail}
@@ -153,7 +153,7 @@ function ListingCard({
             />
           ) : (
             <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <span className="text-gray-400">No Image</span>
+              <span className="text-gray-400">Sin imagen</span>
             </div>
           )}
         </div>
@@ -171,7 +171,7 @@ function ListingCard({
                     <span className="font-medium">Tipo de artículo:</span> {listing.category || "N/A"}
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="font-medium">Status:</span>
+                    <span className="font-medium">Estado:</span>
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         listing.status === "active"
@@ -179,7 +179,7 @@ function ListingCard({
                           : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
                       }`}
                     >
-                      {listing.status}
+                      {listing.status === "active" ? "activo" : listing.status}
                     </span>
                   </span>
                 </div>
@@ -194,7 +194,7 @@ function ListingCard({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Listing ID:
+                  ID del listado:
                 </span>
                 <p className="text-gray-600 dark:text-gray-400 font-mono text-xs">
                   {listing.listing_id}
@@ -202,7 +202,7 @@ function ListingCard({
               </div>
               <div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Coordinates:
+                  Coordenadas:
                 </span>
                 <p className="text-gray-600 dark:text-gray-400">
                   {listing.coordinates}
@@ -210,7 +210,7 @@ function ListingCard({
               </div>
               <div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Listed Date:
+                  Fecha de listado:
                 </span>
                 <p className="text-gray-600 dark:text-gray-400">
                   {new Date(listing.listing_date).toLocaleDateString()}
@@ -225,13 +225,13 @@ function ListingCard({
               onClick={() => router.push(`/editListing?listing_id=${listing.listing_id}`)}
               className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
             >
-              Edit Listing
+              Editar listado
             </button>
             <button
               onClick={() => onDelete(listing.listing_id)}
               className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
             >
-              Remove Listing
+              Eliminar listado
             </button>
           </div>
         </div>

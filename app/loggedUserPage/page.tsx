@@ -36,7 +36,7 @@ export default function LoggedUserPage() {
   if (status === "loading" || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Loading...</p>
+        <p className="text-lg">Cargando...</p>
       </div>
     );
   }
@@ -50,20 +50,20 @@ export default function LoggedUserPage() {
       <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
-            User Profile
+            Perfil de usuario
           </h1>
           <div className="flex gap-2">
             <button
               onClick={() => router.push("/listar")}
               className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
             >
-              Create Listing
+              Crear listado
             </button>
             <button
               onClick={() => router.push("/misListados")}
               className="rounded-full bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
             >
-              My Listings
+              Mis listados
             </button>
             <button
               onClick={() => router.push("/mensajes")}
@@ -75,7 +75,7 @@ export default function LoggedUserPage() {
               onClick={() => signOut({ callbackUrl: "/" })}
               className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
             >
-              Sign Out
+              Cerrar sesión
             </button>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function LoggedUserPage() {
         <div className="space-y-4">
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              Email
+              Correo electrónico
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
               {userData?.email || session.user?.email || "N/A"}
@@ -92,7 +92,7 @@ export default function LoggedUserPage() {
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              User ID
+              ID de usuario
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
               {userData?.user_id || "N/A"}
@@ -101,25 +101,25 @@ export default function LoggedUserPage() {
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              First Names
+              Nombres
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.first_names || "Not provided"}
+              {userData?.first_names || "No proporcionado"}
             </p>
           </div>
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              Last Names
+              Apellidos
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.last_names || "Not provided"}
+              {userData?.last_names || "No proporcionado"}
             </p>
           </div>
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              Status
+              Estado
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
               {userData?.status || "N/A"}
@@ -128,7 +128,7 @@ export default function LoggedUserPage() {
 
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              Join Date
+              Fecha de registro
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
               {userData?.join_date

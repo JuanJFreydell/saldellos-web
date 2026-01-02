@@ -204,7 +204,7 @@ function EditListingContent() {
             : [""],
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load listing");
+      setError(err instanceof Error ? err.message : "Error al cargar el listado");
       console.error("Error fetching listing:", err);
     } finally {
       setLoading(false);
@@ -361,7 +361,7 @@ function EditListingContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update listing");
+        throw new Error(data.error || "Error al actualizar el listado");
       }
 
       setSuccess(true);
@@ -369,7 +369,7 @@ function EditListingContent() {
         router.push("/misListados");
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
     } finally {
       setSaving(false);
     }
@@ -378,7 +378,7 @@ function EditListingContent() {
   if (status === "loading" || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Loading...</p>
+        <p className="text-lg">Cargando...</p>
       </div>
     );
   }
@@ -391,7 +391,7 @@ function EditListingContent() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12 px-4">
       <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
         <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
-          Edit Listing
+          Editar listado
         </h1>
 
         {error && (
@@ -402,7 +402,7 @@ function EditListingContent() {
 
         {success && (
           <div className="mb-4 rounded-lg bg-green-100 border border-green-400 text-green-700 px-4 py-3">
-            Listing updated successfully! Redirecting...
+            ¡Listado actualizado exitosamente! Redirigiendo...
           </div>
         )}
 
@@ -413,7 +413,7 @@ function EditListingContent() {
               htmlFor="title"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Title
+              Título
             </label>
             <input
               type="text"
@@ -422,7 +422,7 @@ function EditListingContent() {
               value={formData.title}
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter listing title"
+              placeholder="Ingresa el título del listado"
             />
           </div>
 
@@ -432,7 +432,7 @@ function EditListingContent() {
               htmlFor="description"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Description
+              Descripción
             </label>
             <textarea
               id="description"
@@ -441,7 +441,7 @@ function EditListingContent() {
               onChange={handleInputChange}
               rows={4}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Describe your listing"
+              placeholder="Describe tu listado"
             />
           </div>
 
@@ -451,7 +451,7 @@ function EditListingContent() {
               htmlFor="country"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Country
+              País
             </label>
             <select
               id="country"
@@ -460,7 +460,7 @@ function EditListingContent() {
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              <option value="">Select a country</option>
+              <option value="">Selecciona un país</option>
               {countries.map((country) => (
                 <option key={country.country_id} value={country.country_id}>
                   {country.country_name}
@@ -475,7 +475,7 @@ function EditListingContent() {
               htmlFor="city"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              City {formData.country_id ? "(optional)" : ""}
+              Ciudad {formData.country_id ? "(opcional)" : ""}
             </label>
             <select
               id="city"
@@ -485,7 +485,7 @@ function EditListingContent() {
               disabled={!formData.country_id || loadingCities}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >
-              <option value="">Select a city</option>
+              <option value="">Selecciona una ciudad</option>
               {cities.map((city) => (
                 <option key={city.city_id} value={city.city_id}>
                   {city.city_name}
@@ -500,7 +500,7 @@ function EditListingContent() {
               htmlFor="neighborhood"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Neighborhood {formData.city_id ? "(optional)" : ""}
+              Barrio {formData.city_id ? "(opcional)" : ""}
             </label>
             <select
               id="neighborhood"
@@ -510,7 +510,7 @@ function EditListingContent() {
               disabled={!formData.city_id || loadingNeighborhoods}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >
-              <option value="">Select a neighborhood</option>
+              <option value="">Selecciona un barrio</option>
               {neighborhoods.map((neighborhood) => (
                 <option key={neighborhood.neighborhood_id} value={neighborhood.neighborhood_id}>
                   {neighborhood.neighborhood_name}
@@ -525,7 +525,7 @@ function EditListingContent() {
               htmlFor="address_line_1"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Address Line 1
+              Dirección línea 1
             </label>
             <input
               type="text"
@@ -534,7 +534,7 @@ function EditListingContent() {
               value={formData.address_line_1}
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter street address"
+              placeholder="Ingresa la dirección"
             />
           </div>
 
@@ -544,7 +544,7 @@ function EditListingContent() {
               htmlFor="address_line_2"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Address Line 2 (optional)
+              Dirección línea 2 (opcional)
             </label>
             <input
               type="text"
@@ -553,7 +553,7 @@ function EditListingContent() {
               value={formData.address_line_2}
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Apartment, suite, etc. (optional)"
+              placeholder="Apartamento, suite, etc. (opcional)"
             />
           </div>
 
@@ -563,7 +563,7 @@ function EditListingContent() {
               htmlFor="coordinates"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Coordinates (lat,lng)
+              Coordenadas (lat,lng)
             </label>
             <input
               type="text"
@@ -572,7 +572,7 @@ function EditListingContent() {
               value={formData.coordinates}
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="e.g., 4.7110,-74.0721"
+              placeholder="ej: 4.7110,-74.0721"
             />
           </div>
 
@@ -582,7 +582,7 @@ function EditListingContent() {
               htmlFor="price"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Price
+              Precio
             </label>
             <input
               type="text"
@@ -591,7 +591,7 @@ function EditListingContent() {
               value={formData.price}
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter price"
+              placeholder="Ingresa el precio"
             />
           </div>
 
@@ -623,7 +623,7 @@ function EditListingContent() {
           {/* Photos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Photo URLs
+              URLs de fotos
             </label>
             {formData.pictures.map((photo, index) => (
               <div key={index} className="mb-2 flex gap-2">
@@ -632,7 +632,7 @@ function EditListingContent() {
                   value={photo}
                   onChange={(e) => handlePhotoChange(index, e.target.value)}
                   className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="https://example.com/photo.jpg"
+                  placeholder="https://ejemplo.com/foto.jpg"
                 />
                 {formData.pictures.length > 1 && (
                   <button
@@ -640,7 +640,7 @@ function EditListingContent() {
                     onClick={() => removePhotoField(index)}
                     className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
                   >
-                    Remove
+                    Eliminar
                   </button>
                 )}
               </div>
@@ -650,7 +650,7 @@ function EditListingContent() {
               onClick={addPhotoField}
               className="mt-2 rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-600 transition-colors"
             >
-              Add Another Photo
+              Agregar otra foto
             </button>
           </div>
 
@@ -661,14 +661,14 @@ function EditListingContent() {
               disabled={saving}
               className="flex-1 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? "Guardando..." : "Guardar cambios"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/misListados")}
               className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              Cancelar
             </button>
           </div>
         </form>
@@ -682,7 +682,7 @@ export default function EditListingPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-lg">Loading...</p>
+          <p className="text-lg">Cargando...</p>
         </div>
       }
     >
