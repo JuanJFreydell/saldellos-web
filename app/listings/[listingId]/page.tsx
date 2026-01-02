@@ -181,11 +181,13 @@ export default function ListingDetailPage() {
             {/* Main thumbnail or first photo */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
               {listing.thumbnail || (listing.pictureURLs && listing.pictureURLs.length > 0) ? (
-                <img
-                  src={listing.thumbnail || listing.pictureURLs[0]}
-                  alt={listing.title}
-                  className="w-full h-96 object-cover"
-                />
+                <div className="w-full aspect-[4/3] min-h-[300px] max-h-[600px] flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+                  <img
+                    src={listing.thumbnail || listing.pictureURLs[0]}
+                    alt={listing.title}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
               ) : (
                 <div className="w-full h-96 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                   <span className="text-gray-400">Sin imagen</span>
@@ -199,13 +201,15 @@ export default function ListingDetailPage() {
                 {listing.pictureURLs.slice(1).map((photoUrl, index) => (
                   <div
                     key={index}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity aspect-square"
                   >
-                    <img
-                      src={photoUrl}
-                      alt={`${listing.title} - Foto ${index + 2}`}
-                      className="w-full h-24 object-cover"
-                    />
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+                      <img
+                        src={photoUrl}
+                        alt={`${listing.title} - Foto ${index + 2}`}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

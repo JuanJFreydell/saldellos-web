@@ -346,9 +346,16 @@ function EditListingContent() {
         updatePayload.thumbnail = validPhotos[0];
         updatePayload.pictures = validPhotos;
       }
-      if (formData.country) updatePayload.country = formData.country;
-      if (formData.city) updatePayload.city = formData.city;
-      if (formData.neighborhood) updatePayload.neighborhood = formData.neighborhood;
+      // Location fields - all must be provided together if any is being updated
+      // Since they're required fields, always include them if they have values
+      if (formData.country && formData.city && formData.neighborhood) {
+        updatePayload.country = formData.country;
+        updatePayload.city = formData.city;
+        updatePayload.neighborhood = formData.neighborhood;
+      } else if (formData.country || formData.city || formData.neighborhood) {
+        // If any location field is provided but not all, show error
+        throw new Error("País, ciudad y barrio son obligatorios cuando se actualiza la ubicación");
+      }
 
       const response = await fetch("/api/manageListings", {
         method: "PATCH",
@@ -475,13 +482,14 @@ function EditListingContent() {
               htmlFor="city"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Ciudad {formData.country_id ? "(opcional)" : ""}
+              Ciudad *
             </label>
             <select
               id="city"
               name="city"
               value={formData.city_id}
               onChange={handleInputChange}
+              required
               disabled={!formData.country_id || loadingCities}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >
@@ -500,13 +508,14 @@ function EditListingContent() {
               htmlFor="neighborhood"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Barrio {formData.city_id ? "(opcional)" : ""}
+              Barrio *
             </label>
             <select
               id="neighborhood"
               name="neighborhood"
               value={formData.neighborhood_id}
               onChange={handleInputChange}
+              required
               disabled={!formData.city_id || loadingNeighborhoods}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >

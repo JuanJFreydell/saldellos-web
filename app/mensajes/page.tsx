@@ -299,13 +299,15 @@ export default function MensagesPage() {
                   >
                     <div className="flex items-start gap-3">
                       {conversation.listing_metadata?.thumbnail ? (
-                        <img
-                          src={conversation.listing_metadata.thumbnail}
-                          alt={conversation.listing_metadata.title}
-                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                        />
+                        <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0 overflow-hidden">
+                          <img
+                            src={conversation.listing_metadata.thumbnail}
+                            alt={conversation.listing_metadata.title}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                           <span className="text-gray-400 text-xs">Sin imagen</span>
                         </div>
                       )}
@@ -315,7 +317,7 @@ export default function MensagesPage() {
                             {getParticipantName(otherParticipant)}
                           </p>
                           {conversation.messages.length > 0 && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 shrink-0">
                               {formatTime(
                                 conversation.messages[conversation.messages.length - 1]
                                   .time_sent
@@ -346,11 +348,13 @@ export default function MensagesPage() {
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                   {selectedConversation.listing_metadata?.thumbnail ? (
-                    <img
-                      src={selectedConversation.listing_metadata.thumbnail}
-                      alt={selectedConversation.listing_metadata.title}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
+                    <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={selectedConversation.listing_metadata.thumbnail}
+                        alt={selectedConversation.listing_metadata.title}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                       <span className="text-gray-400 text-xs">Sin imagen</span>

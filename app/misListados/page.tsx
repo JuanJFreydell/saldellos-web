@@ -144,12 +144,12 @@ function ListingCard({
     <div className="rounded-lg bg-white shadow-md dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700">
       <div className="flex flex-row">
         {/* Thumbnail */}
-        <div className="w-48 h-48 shrink-0">
+        <div className="w-48 h-48 shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
           {listing.thumbnail ? (
             <img
               src={listing.thumbnail}
               alt={listing.title}
-              className="w-full h-full object-cover"
+              className="max-w-full max-h-full object-contain"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">

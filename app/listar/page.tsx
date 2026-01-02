@@ -110,12 +110,12 @@ export default function ListarPage() {
     try {
       setLoadingCountries(true);
       const response = await fetch("/api/locations/countries");
-      if (!response.ok) throw new Error("Failed to fetch countries");
+      if (!response.ok) throw new Error("Error al cargar países");
       const data = await response.json();
       setCountries(data.countries || []);
     } catch (err) {
       console.error("Error fetching countries:", err);
-      setError("Failed to load countries");
+      setError("Error al cargar países");
     } finally {
       setLoadingCountries(false);
     }
@@ -125,12 +125,12 @@ export default function ListarPage() {
     try {
       setLoadingCities(true);
       const response = await fetch(`/api/locations/cities?country_id=${countryId}`);
-      if (!response.ok) throw new Error("Failed to fetch cities");
+      if (!response.ok) throw new Error("Error al cargar ciudades");
       const data = await response.json();
       setCities(data.cities || []);
     } catch (err) {
       console.error("Error fetching cities:", err);
-      setError("Failed to load cities");
+      setError("Error al cargar ciudades");
     } finally {
       setLoadingCities(false);
     }
@@ -140,12 +140,12 @@ export default function ListarPage() {
     try {
       setLoadingNeighborhoods(true);
       const response = await fetch(`/api/locations/neighborhoods?city_id=${cityId}`);
-      if (!response.ok) throw new Error("Failed to fetch neighborhoods");
+      if (!response.ok) throw new Error("Error al cargar barrios");
       const data = await response.json();
       setNeighborhoods(data.neighborhoods || []);
     } catch (err) {
       console.error("Error fetching neighborhoods:", err);
-      setError("Failed to load neighborhoods");
+      setError("Error al cargar barrios");
     } finally {
       setLoadingNeighborhoods(false);
     }
@@ -156,12 +156,12 @@ export default function ListarPage() {
       setLoadingSubcategories(true);
       // Fetch subcategories for "para la venta" category (no category_id needed)
       const response = await fetch("/api/locations/subcategories");
-      if (!response.ok) throw new Error("Failed to fetch subcategories");
+      if (!response.ok) throw new Error("Error al cargar subcategorías");
       const data = await response.json();
       setSubcategories(data.subcategories || []);
     } catch (err) {
       console.error("Error fetching subcategories:", err);
-      setError("Failed to load subcategories");
+      setError("Error al cargar subcategorías");
     } finally {
       setLoadingSubcategories(false);
     }
@@ -171,7 +171,7 @@ export default function ListarPage() {
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Loading...</p>
+        <p className="text-lg">Cargando...</p>
       </div>
     );
   }
@@ -239,22 +239,36 @@ export default function ListarPage() {
     const validPhotos = formData.pictures.filter((photo) => photo.trim() !== "");
 
     if (validPhotos.length === 0) {
-      setError("At least one photo is required");
+      setError("Se requiere al menos una foto");
       setLoading(false);
       return;
     }
 
-    if (!session?.user?.id) {
-      setError("User session not found");
+    if (!session?.user?.email) {
+      setError("Sesión de usuario no encontrada");
       setLoading(false);
       return;
     }
 
-    // Get user_id from session
+    // Validate that city and neighborhood are provided
+    if (!formData.city || !formData.city_id) {
+      setError("La ciudad es obligatoria");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.neighborhood || !formData.neighborhood_id) {
+      setError("El barrio es obligatorio");
+      setLoading(false);
+      return;
+    }
+
+    // Get user_id from API
     try {
       const userResponse = await fetch("/api/user");
       if (!userResponse.ok) {
-        throw new Error("Failed to fetch user data");
+        const errorData = await userResponse.json().catch(() => ({ error: "Error desconocido" }));
+        throw new Error(errorData.error || `Error al obtener datos del usuario: ${userResponse.status}`);
       }
       const userData = await userResponse.json();
       const ownerId = userData.user_id;
@@ -277,12 +291,10 @@ export default function ListarPage() {
       if (formData.address_line_2.trim()) {
         requestBody.address_line_2 = formData.address_line_2;
       }
-      if (formData.city) {
-        requestBody.city = formData.city;
-      }
-      if (formData.neighborhood) {
-        requestBody.neighborhood = formData.neighborhood;
-      }
+      
+      // City and neighborhood are now required
+      requestBody.city = formData.city;
+      requestBody.neighborhood = formData.neighborhood;
 
       const response = await fetch("/api/manageListings", {
         method: "POST",
@@ -295,7 +307,7 @@ export default function ListarPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create listing");
+        throw new Error(data.error || "Error al crear el listado");
       }
 
       setSuccess(true);
@@ -322,7 +334,7 @@ export default function ListarPage() {
         router.push("/loggedUserPage");
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
     } finally {
       setLoading(false);
     }
@@ -332,7 +344,7 @@ export default function ListarPage() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12 px-4">
       <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
         <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
-          Create New Listing
+          Crear nuevo listado
         </h1>
 
         {error && (
@@ -343,7 +355,7 @@ export default function ListarPage() {
 
         {success && (
           <div className="mb-4 rounded-lg bg-green-100 border border-green-400 text-green-700 px-4 py-3">
-            Listing created successfully! Redirecting...
+            ¡Listado creado exitosamente! Redirigiendo...
           </div>
         )}
 
@@ -354,7 +366,7 @@ export default function ListarPage() {
               htmlFor="title"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Title *
+              Título *
             </label>
             <input
               type="text"
@@ -364,7 +376,7 @@ export default function ListarPage() {
               onChange={handleInputChange}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter listing title"
+              placeholder="Ingresa el título del listado"
             />
           </div>
 
@@ -374,7 +386,7 @@ export default function ListarPage() {
               htmlFor="description"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Description *
+              Descripción *
             </label>
             <textarea
               id="description"
@@ -384,7 +396,7 @@ export default function ListarPage() {
               required
               rows={4}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Describe your listing"
+              placeholder="Describe tu listado"
             />
           </div>
 
@@ -394,7 +406,7 @@ export default function ListarPage() {
               htmlFor="country"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Country *
+              País *
             </label>
             <select
               id="country"
@@ -405,7 +417,7 @@ export default function ListarPage() {
               disabled={loadingCountries}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >
-              <option value="">Select a country</option>
+              <option value="">Selecciona un país</option>
               {countries.map((country) => (
                 <option key={country.country_id} value={country.country_id}>
                   {country.country_name}
@@ -420,17 +432,18 @@ export default function ListarPage() {
               htmlFor="city"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              City {formData.country_id ? "(optional)" : ""}
+              Ciudad *
             </label>
             <select
               id="city"
               name="city"
               value={formData.city_id}
               onChange={handleInputChange}
+              required
               disabled={!formData.country_id || loadingCities}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >
-              <option value="">Select a city</option>
+              <option value="">Selecciona una ciudad</option>
               {cities.map((city) => (
                 <option key={city.city_id} value={city.city_id}>
                   {city.city_name}
@@ -445,17 +458,18 @@ export default function ListarPage() {
               htmlFor="neighborhood"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Neighborhood {formData.city_id ? "(optional)" : ""}
+              Barrio *
             </label>
             <select
               id="neighborhood"
               name="neighborhood"
               value={formData.neighborhood_id}
               onChange={handleInputChange}
+              required
               disabled={!formData.city_id || loadingNeighborhoods}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
             >
-              <option value="">Select a neighborhood</option>
+              <option value="">Selecciona un barrio</option>
               {neighborhoods.map((neighborhood) => (
                 <option key={neighborhood.neighborhood_id} value={neighborhood.neighborhood_id}>
                   {neighborhood.neighborhood_name}
@@ -470,7 +484,7 @@ export default function ListarPage() {
               htmlFor="address_line_1"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Address Line 1 *
+              Dirección línea 1 *
             </label>
             <input
               type="text"
@@ -480,7 +494,7 @@ export default function ListarPage() {
               onChange={handleInputChange}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter street address"
+              placeholder="Ingresa la dirección"
             />
           </div>
 
@@ -490,7 +504,7 @@ export default function ListarPage() {
               htmlFor="address_line_2"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Address Line 2 (optional)
+              Dirección línea 2 (opcional)
             </label>
             <input
               type="text"
@@ -499,7 +513,7 @@ export default function ListarPage() {
               value={formData.address_line_2}
               onChange={handleInputChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Apartment, suite, etc. (optional)"
+              placeholder="Apartamento, suite, etc. (opcional)"
             />
           </div>
 
@@ -509,7 +523,7 @@ export default function ListarPage() {
               htmlFor="coordinates"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Coordinates (lat,lng) *
+              Coordenadas (lat,lng) *
             </label>
             <input
               type="text"
@@ -519,7 +533,7 @@ export default function ListarPage() {
               onChange={handleInputChange}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="e.g., 4.7110,-74.0721"
+              placeholder="ej: 4.7110,-74.0721"
             />
           </div>
 
@@ -529,7 +543,7 @@ export default function ListarPage() {
               htmlFor="price"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Price *
+              Precio *
             </label>
             <input
               type="text"
@@ -539,7 +553,7 @@ export default function ListarPage() {
               onChange={handleInputChange}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter price"
+              placeholder="Ingresa el precio"
             />
           </div>
 
@@ -572,7 +586,7 @@ export default function ListarPage() {
           {/* Photos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Photo URLs * (at least one required)
+              URLs de fotos * (se requiere al menos una)
             </label>
             {formData.pictures.map((photo, index) => (
               <div key={index} className="mb-2 flex gap-2">
@@ -582,7 +596,7 @@ export default function ListarPage() {
                   onChange={(e) => handlePhotoChange(index, e.target.value)}
                   required={index === 0}
                   className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="https://example.com/photo.jpg"
+                  placeholder="https://ejemplo.com/foto.jpg"
                 />
                 {formData.pictures.length > 1 && (
                   <button
@@ -590,7 +604,7 @@ export default function ListarPage() {
                     onClick={() => removePhotoField(index)}
                     className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
                   >
-                    Remove
+                    Eliminar
                   </button>
                 )}
               </div>
@@ -600,7 +614,7 @@ export default function ListarPage() {
               onClick={addPhotoField}
               className="mt-2 rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-600 transition-colors"
             >
-              Add Another Photo
+              Agregar otra foto
             </button>
           </div>
 
@@ -611,14 +625,14 @@ export default function ListarPage() {
               disabled={loading}
               className="flex-1 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? "Creating..." : "Create Listing"}
+              {loading ? "Creando..." : "Crear listado"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/loggedUserPage")}
               className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              Cancelar
             </button>
           </div>
         </form>

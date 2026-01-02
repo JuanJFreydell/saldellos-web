@@ -166,8 +166,8 @@ interface CreateListingRequest {
   material_ids?: string[]; // Array of material IDs (optional)
   address_line_1: string;
   address_line_2?: string; // Optional
-  neighborhood?: string; // Neighborhood name (optional, requires city)
-  city?: string; // City name (optional, requires country)
+  neighborhood: string; // Neighborhood name (required)
+  city: string; // City name (required)
   country: string; // Country name (required)
   coordinates: string;
 }
@@ -284,24 +284,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validation: city requires country
-    if (body.city && !body.country) {
+    // Validation: city is required
+    if (!body.city || body.city.trim() === "") {
       return NextResponse.json(
-        { error: "country is required when city is provided" },
+        { error: "city is required" },
         { status: 400 }
       );
     }
 
-    // Validation: neighborhood requires city
-    if (body.neighborhood && !body.city) {
+    // Validation: neighborhood is required
+    if (!body.neighborhood || body.neighborhood.trim() === "") {
       return NextResponse.json(
-        { error: "city is required when neighborhood is provided" },
+        { error: "neighborhood is required" },
         { status: 400 }
       );
     }
 
     // 4. Validate hierarchy: country → city → neighborhood
-    let neighborhoodId: string | null = null;
+    // All three are now required, so we validate the complete hierarchy
 
     // Get country_id
     const { data: countryData, error: countryError } = await adminClient
@@ -319,44 +319,39 @@ export async function POST(request: Request) {
 
     const countryId = countryData.country_id.toString();
 
-    // If city is provided, validate it belongs to country
-    let cityId: string | null = null;
-    if (body.city && body.city.trim() !== "") {
-      const { data: cityData, error: cityError } = await adminClient
-        .from("listing_cities")
-        .select("city_id")
-        .ilike("city_name", body.city.trim())
-        .eq("country_id", countryId)
-        .single();
+    // Validate city belongs to country (city is now required)
+    const { data: cityData, error: cityError } = await adminClient
+      .from("listing_cities")
+      .select("city_id")
+      .ilike("city_name", body.city.trim())
+      .eq("country_id", countryId)
+      .single();
 
-      if (cityError || !cityData) {
-        return NextResponse.json(
-          { error: "City not found in the specified country" },
-          { status: 404 }
-        );
-      }
-
-      cityId = cityData.city_id.toString();
-
-      // If neighborhood is provided, validate it belongs to city
-      if (body.neighborhood && body.neighborhood.trim() !== "") {
-        const { data: neighborhoodData, error: neighborhoodError } = await adminClient
-          .from("listing_neighborhoods")
-          .select("neighborhood_id")
-          .ilike("neighborhood_name", body.neighborhood.trim())
-          .eq("city_id", cityId)
-          .single();
-
-        if (neighborhoodError || !neighborhoodData) {
-          return NextResponse.json(
-            { error: "Neighborhood not found in the specified city" },
-            { status: 404 }
-          );
-        }
-
-        neighborhoodId = neighborhoodData.neighborhood_id.toString();
-      }
+    if (cityError || !cityData) {
+      return NextResponse.json(
+        { error: "City not found in the specified country" },
+        { status: 404 }
+      );
     }
+
+    const cityId = cityData.city_id.toString();
+
+    // Validate neighborhood belongs to city (neighborhood is now required)
+    const { data: neighborhoodData, error: neighborhoodError } = await adminClient
+      .from("listing_neighborhoods")
+      .select("neighborhood_id")
+      .ilike("neighborhood_name", body.neighborhood.trim())
+      .eq("city_id", cityId)
+      .single();
+
+    if (neighborhoodError || !neighborhoodData) {
+      return NextResponse.json(
+        { error: "Neighborhood not found in the specified city" },
+        { status: 404 }
+      );
+    }
+
+    const neighborhoodId = neighborhoodData.neighborhood_id.toString();
 
     // 5. Validate material_ids if provided
     const validMaterialIds: string[] = [];
@@ -785,76 +780,83 @@ export async function PATCH(request: Request) {
 
     // Handle neighborhood update if provided (requires hierarchy validation)
     if (body.neighborhood !== undefined || body.city !== undefined || body.country !== undefined) {
-      // Validate hierarchy if any location field is being updated
+      // If any location field is being updated, all must be provided
       const country = body.country;
       const city = body.city;
       const neighborhood = body.neighborhood;
 
-      if (neighborhood && !city) {
-        return NextResponse.json(
-          { error: "city is required when updating neighborhood" },
-          { status: 400 }
-        );
-      }
-
-      if (city && !country) {
-        return NextResponse.json(
-          { error: "country is required when updating city" },
-          { status: 400 }
-        );
-      }
-
-      let neighborhoodId: string | null = null;
-
-      if (country) {
-        const { data: countryData } = await supabaseAdmin
-          .from("countries")
-          .select("country_id")
-          .ilike("country_name", country.trim())
-          .single();
-
-        if (!countryData) {
+      // Validate that all location fields are provided when updating location
+      if (country !== undefined || city !== undefined || neighborhood !== undefined) {
+        if (!country || country.trim() === "") {
           return NextResponse.json(
-            { error: "Country not found" },
-            { status: 404 }
+            { error: "country is required when updating location" },
+            { status: 400 }
           );
         }
 
-        if (city) {
-          const { data: cityData } = await supabaseAdmin
-            .from("listing_cities")
-            .select("city_id")
-            .ilike("city_name", city.trim())
-            .eq("country_id", countryData.country_id.toString())
-            .single();
+        if (!city || city.trim() === "") {
+          return NextResponse.json(
+            { error: "city is required when updating location" },
+            { status: 400 }
+          );
+        }
 
-          if (!cityData) {
-            return NextResponse.json(
-              { error: "City not found in the specified country" },
-              { status: 404 }
-            );
-          }
-
-          if (neighborhood) {
-            const { data: neighborhoodData } = await supabaseAdmin
-              .from("listing_neighborhoods")
-              .select("neighborhood_id")
-              .ilike("neighborhood_name", neighborhood.trim())
-              .eq("city_id", cityData.city_id.toString())
-              .single();
-
-            if (!neighborhoodData) {
-              return NextResponse.json(
-                { error: "Neighborhood not found in the specified city" },
-                { status: 404 }
-              );
-            }
-
-            neighborhoodId = neighborhoodData.neighborhood_id.toString();
-          }
+        if (!neighborhood || neighborhood.trim() === "") {
+          return NextResponse.json(
+            { error: "neighborhood is required when updating location" },
+            { status: 400 }
+          );
         }
       }
 
+      // Now we know country, city, and neighborhood are all provided (non-null after validation)
+      // Use type assertion since we've validated they exist
+      const validatedCountry = country!;
+      const validatedCity = city!;
+      const validatedNeighborhood = neighborhood!;
+
+      const { data: countryData } = await supabaseAdmin
+        .from("countries")
+        .select("country_id")
+        .ilike("country_name", validatedCountry.trim())
+        .single();
+
+      if (!countryData) {
+        return NextResponse.json(
+          { error: "Country not found" },
+          { status: 404 }
+        );
+      }
+
+      const { data: cityData } = await supabaseAdmin
+        .from("listing_cities")
+        .select("city_id")
+        .ilike("city_name", validatedCity.trim())
+        .eq("country_id", countryData.country_id.toString())
+        .single();
+
+      if (!cityData) {
+        return NextResponse.json(
+          { error: "City not found in the specified country" },
+          { status: 404 }
+        );
+      }
+
+      const { data: neighborhoodData } = await supabaseAdmin
+        .from("listing_neighborhoods")
+        .select("neighborhood_id")
+        .ilike("neighborhood_name", validatedNeighborhood.trim())
+        .eq("city_id", cityData.city_id.toString())
+        .single();
+
+      if (!neighborhoodData) {
+        return NextResponse.json(
+          { error: "Neighborhood not found in the specified city" },
+          { status: 404 }
+        );
+      }
+
+      const neighborhoodId = neighborhoodData.neighborhood_id.toString();
       addressUpdates.neighborhood_id = neighborhoodId;
     }
 
