@@ -368,7 +368,7 @@ export default function Home() {
                 })
               )}
             </div>
-          </div>
+        </div>
 
           {/* Subcategory Section */}
           <div className="w-1/2 h-max">
@@ -379,7 +379,7 @@ export default function Home() {
             <div
               className="flex flex-wrap gap-2"
               style={{
-                maxHeight: "200px",
+                maxHeight: "150px",
                 overflowY: "auto",
                 paddingRight: "4px" // Provide some space for scrollbar if needed
               }}
@@ -503,7 +503,7 @@ function ListingCard({ listing }: { listing: ListingMetadata }) {
       className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
     >
       {/* Thumbnail */}
-      <div className="w-full bg-gray-200 dark:bg-gray-700 aspect-[4/3] min-h-[192px] max-h-[320px] flex items-center justify-center overflow-hidden">
+      <div className="w-full bg-gray-50 dark:bg-gray-700 aspect-[4/3] min-h-[192px] max-h-[320px] flex items-center justify-center overflow-hidden">
         {listing.thumbnail ? (
           <img
             src={listing.thumbnail}

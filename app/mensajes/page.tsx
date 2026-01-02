@@ -300,11 +300,11 @@ export default function MensagesPage() {
                     <div className="flex items-start gap-3">
                       {conversation.listing_metadata?.thumbnail ? (
                         <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0 overflow-hidden">
-                          <img
-                            src={conversation.listing_metadata.thumbnail}
-                            alt={conversation.listing_metadata.title}
+                        <img
+                          src={conversation.listing_metadata.thumbnail}
+                          alt={conversation.listing_metadata.title}
                             className="max-w-full max-h-full object-contain"
-                          />
+                        />
                         </div>
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
@@ -349,11 +349,11 @@ export default function MensagesPage() {
                 <div className="flex items-center gap-3">
                   {selectedConversation.listing_metadata?.thumbnail ? (
                     <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={selectedConversation.listing_metadata.thumbnail}
-                        alt={selectedConversation.listing_metadata.title}
+                    <img
+                      src={selectedConversation.listing_metadata.thumbnail}
+                      alt={selectedConversation.listing_metadata.title}
                         className="max-w-full max-h-full object-contain"
-                      />
+                    />
                     </div>
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">

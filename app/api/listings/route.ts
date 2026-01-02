@@ -288,7 +288,7 @@ export async function POST(request: Request) {
 
     if (listingsError) {
       console.error("Error fetching listings:", listingsError);
-      return NextResponse.json(
+    return NextResponse.json(
         { error: "Failed to fetch listings" },
         { status: 500 }
       );
