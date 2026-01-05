@@ -2,6 +2,8 @@
 
 import { useState, FormEvent, useEffect } from "react";
 import { signIn } from "next-auth/react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ export default function SignInModal({
   onClose,
   onSwitchToSignUp,
 }: SignInModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -26,10 +29,59 @@ export default function SignInModal({
     setLoading(true);
     setError(null);
 
-    // TODO: Implement backend signin functionality
-    // For now, just show an error message
-    setError("La funcionalidad de inicio de sesión con email aún no está disponible. Por favor usa Google para iniciar sesión.");
-    setLoading(false);
+    try {
+      // Sign in with Supabase Auth using PKCE flow (client-side)
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (authError) {
+        throw new Error(authError.message || "Credenciales inválidas");
+      }
+
+      if (!authData.user || !authData.session) {
+        throw new Error("Error al iniciar sesión");
+      }
+
+      // Check if email is confirmed
+      if (!authData.user.email_confirmed_at) {
+        throw new Error("Por favor confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.");
+      }
+
+      // Sync user with our users table via API
+      try {
+        const syncResponse = await fetch("/api/auth/sync-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            supabaseUserId: authData.user.id,
+            email: authData.user.email,
+            firstNames: authData.user.user_metadata?.first_names || null,
+            lastNames: authData.user.user_metadata?.last_names || null,
+          }),
+        });
+
+        if (!syncResponse.ok) {
+          console.error("Error syncing user to database");
+          // Continue anyway - user can still sign in
+        }
+      } catch (syncError) {
+        console.error("Error syncing user:", syncError);
+        // Continue anyway
+      }
+
+      // Success - close modal and redirect
+      onClose();
+      router.refresh();
+      router.push("/loggedUserPage");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = () => {

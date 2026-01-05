@@ -2,6 +2,8 @@
 
 import { useState, FormEvent, useEffect } from "react";
 import { signIn } from "next-auth/react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -14,8 +16,10 @@ export default function SignUpModal({
   onClose,
   onSwitchToSignIn,
 }: SignUpModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -28,6 +32,7 @@ export default function SignUpModal({
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
@@ -42,10 +47,76 @@ export default function SignUpModal({
       return;
     }
 
-    // TODO: Implement backend signup functionality
-    // For now, just show an error message
-    setError("La funcionalidad de registro con email aún no está disponible. Por favor usa Google para registrarte.");
-    setLoading(false);
+    try {
+      // Sign up with Supabase Auth using PKCE flow (client-side)
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          data: {
+            first_names: formData.firstNames || null,
+            last_names: formData.lastNames || null,
+          }
+        }
+      });
+
+      if (authError) {
+        throw new Error(authError.message || "Error al crear la cuenta");
+      }
+
+      if (!authData.user) {
+        throw new Error("No se pudo crear el usuario");
+      }
+
+      // Sync user with our users table via API
+      try {
+        const syncResponse = await fetch("/api/auth/sync-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            supabaseUserId: authData.user.id,
+            email: formData.email,
+            firstNames: formData.firstNames || null,
+            lastNames: formData.lastNames || null,
+          }),
+        });
+
+        if (!syncResponse.ok) {
+          console.error("Error syncing user to database");
+          // Continue anyway - user can be synced later
+        }
+      } catch (syncError) {
+        console.error("Error syncing user:", syncError);
+        // Continue anyway
+      }
+
+      // Success
+      setSuccess(true);
+      setError(null);
+      
+      // Reset form
+      setFormData({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        firstNames: "",
+        lastNames: "",
+      });
+
+      // Close modal after 3 seconds
+      setTimeout(() => {
+        onClose();
+        setSuccess(false);
+      }, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
+      setSuccess(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = () => {

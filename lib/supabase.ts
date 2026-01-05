@@ -10,9 +10,17 @@ if (!supabaseUrl) {
 }
 
 // Client-side Supabase client (uses publishable key, respects RLS)
-// Only use this for public/unauthenticated operations
+// This client automatically uses PKCE for authentication in the browser
+// Only use this for public/unauthenticated operations and client-side auth
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-export const supabase = createClient(supabaseUrl, publishableKey)
+export const supabase = createClient(supabaseUrl, publishableKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce' // Explicitly use PKCE flow
+  }
+})
 
 // Server-side Supabase client (uses secret key, bypasses RLS)
 // Use this in API routes and server components for authenticated operations

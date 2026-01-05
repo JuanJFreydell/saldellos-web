@@ -208,7 +208,7 @@ export default function ListarPage() {
         neighborhood_id: value,
       }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
