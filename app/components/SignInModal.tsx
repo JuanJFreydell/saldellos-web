@@ -8,12 +8,14 @@ interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToSignUp: () => void;
+  onForgotPassword: () => void;
 }
 
 export default function SignInModal({
   isOpen,
   onClose,
   onSwitchToSignUp,
+  onForgotPassword,
 }: SignInModalProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -185,6 +187,15 @@ export default function SignInModal({
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Tu contraseña"
             />
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={onForgotPassword}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
           </div>
 
           <button

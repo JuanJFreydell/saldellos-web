@@ -5,12 +5,14 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import SignUpModal from "./SignUpModal";
 import SignInModal from "./SignInModal";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 export default function Header() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   // Note: Modals should only close:
   // 1. When user manually closes them (onClose callback)
@@ -84,6 +86,14 @@ export default function Header() {
           setIsSignInOpen(false);
           setIsSignUpOpen(true);
         }}
+        onForgotPassword={() => {
+          setIsSignInOpen(false);
+          setIsForgotPasswordOpen(true);
+        }}
+      />
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
       />
     </header>
   );
