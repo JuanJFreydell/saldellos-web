@@ -52,11 +52,14 @@ export default function SignInModal({
       // No need to sync manually
 
       // Success - close modal and redirect
+      // Only close on success, not on error
       onClose();
       router.refresh();
       router.push("/loggedUserPage");
     } catch (err) {
+      // On error, show error message but keep modal open
       setError(err instanceof Error ? err.message : "Ocurrió un error");
+      // Do NOT close modal on error - let user retry
     } finally {
       setLoading(false);
     }
