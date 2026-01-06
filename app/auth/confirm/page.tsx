@@ -14,23 +14,44 @@ function AuthConfirmContent() {
   const [message, setMessage] = useState("Verificando tu email...");
 
   useEffect(() => {
-    const verifyEmail = async () => {
+    const handleAuthCallback = async () => {
       try {
-        // Get the token from URL hash (Supabase PKCE flow uses hash fragments)
+        // First, check if Supabase has already established a session automatically
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+          // Session already established (OAuth flow with auto-detection)
+          setStatus("success");
+          setMessage("¡Sesión iniciada exitosamente! Redirigiendo...");
+          setTimeout(() => {
+            router.push("/loggedUserPage");
+          }, 1500);
+          return;
+        }
+
+        // If no session, try to get tokens from URL hash (PKCE flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const access_token = hashParams.get("access_token");
+        const refresh_token = hashParams.get("refresh_token");
         const type = hashParams.get("type");
+        const error_description = hashParams.get("error_description");
+        const error = hashParams.get("error");
 
-        // Handle both email confirmation (signup) and OAuth (google, etc.)
+        // Check for OAuth errors
+        if (error) {
+          throw new Error(error_description || error || "Error en la autenticación");
+        }
+
+        // Handle email confirmation or OAuth with tokens in hash
         if (access_token) {
           // Set the session using the access token
-          const { data, error } = await supabase.auth.setSession({
+          const { data, error: setSessionError } = await supabase.auth.setSession({
             access_token,
-            refresh_token: hashParams.get("refresh_token") || "",
+            refresh_token: refresh_token || "",
           });
 
-          if (error) {
-            throw new Error(error.message);
+          if (setSessionError) {
+            throw new Error(setSessionError.message);
           }
 
           if (data.user) {
@@ -48,23 +69,46 @@ function AuthConfirmContent() {
             // Redirect to logged user page after 2 seconds
             setTimeout(() => {
               router.push("/loggedUserPage");
-            }, 2000);
+            }, 1500);
+          } else {
+            throw new Error("No se pudo establecer la sesión");
           }
         } else {
-          throw new Error("Token inválido o faltante");
+          // No tokens found - check if there's a code in query params (alternative OAuth flow)
+          const urlParams = new URLSearchParams(window.location.search);
+          const code = urlParams.get("code");
+          
+          if (code) {
+            // Exchange code for session (this should be handled by Supabase automatically)
+            // But if not, we'll wait a moment and check session again
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const { data: { session: newSession } } = await supabase.auth.getSession();
+            
+            if (newSession && newSession.user) {
+              setStatus("success");
+              setMessage("¡Sesión iniciada exitosamente! Redirigiendo...");
+              setTimeout(() => {
+                router.push("/loggedUserPage");
+              }, 1500);
+            } else {
+              throw new Error("No se pudo completar la autenticación. Por favor intenta nuevamente.");
+            }
+          } else {
+            throw new Error("Token inválido o faltante. Por favor intenta iniciar sesión nuevamente.");
+          }
         }
       } catch (error) {
-        console.error("Error verifying email:", error);
+        console.error("Error in auth callback:", error);
         setStatus("error");
         setMessage(
           error instanceof Error
             ? error.message
-            : "Error al verificar tu email. Por favor intenta nuevamente."
+            : "Error al verificar tu autenticación. Por favor intenta nuevamente."
         );
       }
     };
 
-    verifyEmail();
+    handleAuthCallback();
   }, [router]);
 
   return (
