@@ -1,8 +1,9 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/api-client";
 
 interface ListingMetadata {
   listing_id: string;
@@ -16,25 +17,25 @@ interface ListingMetadata {
 }
 
 export default function MisListadosPage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [listings, setListings] = useState<ListingMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!authLoading && !user) {
       router.push("/");
-    } else if (status === "authenticated") {
+    } else if (user) {
       fetchListings();
     }
-  }, [status, router]);
+  }, [user, authLoading, router]);
 
   async function fetchListings() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/manageListings");
+      const response = await authenticatedFetch("/api/manageListings");
       
       if (!response.ok) {
         throw new Error("Error al cargar los listados");
@@ -52,7 +53,7 @@ export default function MisListadosPage() {
 
   async function handleDeleteListing(listingId: string) {
     try {
-      const response = await fetch(`/api/manageListings?listing_id=${listingId}`, {
+      const response = await authenticatedFetch(`/api/manageListings?listing_id=${listingId}`, {
         method: "DELETE",
       });
 
@@ -69,7 +70,7 @@ export default function MisListadosPage() {
     }
   }
 
-  if (status === "loading" || loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-lg">Cargando...</p>
@@ -77,7 +78,7 @@ export default function MisListadosPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!authLoading && !user) {
     return null;
   }
 

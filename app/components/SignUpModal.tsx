@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, FormEvent, useEffect } from "react";
-import { signIn } from "next-auth/react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -49,11 +48,12 @@ export default function SignUpModal({
 
     try {
       // Sign up with Supabase Auth using PKCE flow (client-side)
+      const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: `${redirectUrl}/auth/confirm`,
           data: {
             first_names: formData.firstNames || null,
             last_names: formData.lastNames || null,
@@ -69,29 +69,8 @@ export default function SignUpModal({
         throw new Error("No se pudo crear el usuario");
       }
 
-      // Sync user with our users table via API
-      try {
-        const syncResponse = await fetch("/api/auth/sync-user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            supabaseUserId: authData.user.id,
-            email: formData.email,
-            firstNames: formData.firstNames || null,
-            lastNames: formData.lastNames || null,
-          }),
-        });
-
-        if (!syncResponse.ok) {
-          console.error("Error syncing user to database");
-          // Continue anyway - user can be synced later
-        }
-      } catch (syncError) {
-        console.error("Error syncing user:", syncError);
-        // Continue anyway
-      }
+      // User profile is automatically created by database trigger
+      // No need to sync manually
 
       // Success
       setSuccess(true);
@@ -119,8 +98,25 @@ export default function SignUpModal({
     }
   };
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/loggedUserPage" });
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${redirectUrl}/auth/confirm`,
+        },
+      });
+      if (error) {
+        setError(error.message);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Disable body scroll when modal is open

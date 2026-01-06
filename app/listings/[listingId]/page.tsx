@@ -2,7 +2,8 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/api-client";
 import Header from "../../components/Header";
 
 interface ListingResponse {
@@ -23,7 +24,7 @@ interface ListingResponse {
 export default function ListingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { user } = useAuth();
   const listingId = params.listingId as string;
 
   const [listing, setListing] = useState<ListingResponse | null>(null);
@@ -75,7 +76,7 @@ export default function ListingDetailPage() {
       setError(null);
 
       // Step 1: Get or create conversation
-      const conversationResponse = await fetch(
+      const conversationResponse = await authenticatedFetch(
         `/api/conversations?listing_id=${listingId}`
       );
 
@@ -92,7 +93,7 @@ export default function ListingDetailPage() {
       }
 
       // Step 2: Send message using conversation_id
-      const messageResponse = await fetch("/api/messages", {
+      const messageResponse = await authenticatedFetch("/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,7 +239,7 @@ export default function ListingDetailPage() {
                 )}
               </div>
               {/* Contact Seller Button */}
-              {status === "authenticated" && session ? (
+              {user ? (
                 <div>
                   {!showMessageForm ? (
                     <button

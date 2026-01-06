@@ -1,19 +1,17 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase";
-import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function GET(request: Request) {
   try {
-    // Get the session to verify user is authenticated
-    const session = await getServerSession(authOptions);
+    // Get the authorization header
+    const authHeader = request.headers.get("authorization");
     
-    if (!session?.user?.email) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Use email from session (more secure - no need for query parameter)
-    const email = session.user.email;
+    const token = authHeader.replace("Bearer ", "");
 
     if (!supabaseAdmin) {
       return NextResponse.json(
@@ -22,27 +20,39 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch user from database
-    const { data, error } = await supabaseAdmin
-      .from("users")
+    // Verify the token and get user
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Fetch user profile from database
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("user_profiles")
       .select("*")
-      .eq("email", email)
+      .eq("auth_user_id", user.id)
       .single();
 
-    if (error || !data) {
-      console.error("Error fetching user:", error);
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (profileError || !profile) {
+      console.error("Error fetching user profile:", profileError);
+      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
     }
 
     // Check if user account is active
-    if (data.status !== "active") {
+    if (profile.status !== "active") {
       return NextResponse.json(
         { error: "Account is not active" },
         { status: 403 }
       );
     }
 
-    return NextResponse.json(data);
+    // Return combined user data
+    return NextResponse.json({
+      ...profile,
+      email: user.email,
+      auth_user_id: user.id,
+    });
   } catch (error) {
     console.error("Error in user API route:", error);
     return NextResponse.json(

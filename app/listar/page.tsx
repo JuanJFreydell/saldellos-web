@@ -1,6 +1,7 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 
@@ -25,7 +26,7 @@ interface Subcategory {
 }
 
 export default function ListarPage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,18 +63,18 @@ export default function ListarPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!authLoading && !user) {
       router.push("/");
     }
-  }, [status, router]);
+  }, [user, authLoading, router]);
 
   // Fetch countries and subcategories on mount
   useEffect(() => {
-    if (status === "authenticated") {
+    if (user) {
       fetchCountries();
       fetchSubcategories();
     }
-  }, [status]);
+  }, [user]);
 
   // Fetch cities when country is selected
   useEffect(() => {
@@ -168,7 +169,7 @@ export default function ListarPage() {
   }
 
   // Show loading state
-  if (status === "loading") {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-lg">Cargando...</p>
@@ -177,7 +178,7 @@ export default function ListarPage() {
   }
 
   // Don't render form if not authenticated
-  if (status === "unauthenticated") {
+  if (!authLoading && !user) {
     return null;
   }
 
@@ -244,7 +245,7 @@ export default function ListarPage() {
       return;
     }
 
-    if (!session?.user?.email) {
+    if (!user) {
       setError("Sesión de usuario no encontrada");
       setLoading(false);
       return;

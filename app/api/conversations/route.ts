@@ -1,7 +1,6 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { getAuthenticatedUser, getUserProfile } from "@/lib/auth-server";
 
 //---- GET CONVERSATIONS ----
 // takes userID (from session) and listingID (from query params)
@@ -13,9 +12,9 @@ import { authOptions } from "../auth/[...nextauth]/route";
 export async function GET(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -26,22 +25,11 @@ export async function GET(request: Request) {
       );
     }
 
-    // 2. Get user from database
-    const { data: user, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (user.status !== "active") {
-      return NextResponse.json(
-        { error: "Account is not active" },
-        { status: 403 }
-      );
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
     // 3. Get listing_id from query parameters
@@ -55,8 +43,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const userId = user.user_id.toString();
-    const normalizedUserId = userId.trim();
+    const userId = authUser.id;
     const normalizedListingId = listing_id.trim();
 
     // 4. Get listing to find the owner
@@ -81,11 +68,10 @@ export async function GET(request: Request) {
       );
     }
 
-    const ownerId = listing.owner_id.toString();
-    const normalizedOwnerId = ownerId.trim();
+    const ownerId = listing.owner_id;
 
     // Prevent users from messaging themselves
-    if (normalizedUserId === normalizedOwnerId) {
+    if (userId === ownerId) {
       return NextResponse.json(
         { error: "You cannot message yourself" },
         { status: 400 }
@@ -107,15 +93,11 @@ export async function GET(request: Request) {
     }
 
     // Find conversation where both participants match (current user and listing owner)
-    // Normalize participant IDs from database before comparison
     let conversation = existingConversations?.find((conv) => {
-      const p1 = String(conv.participant_1 || "").trim();
-      const p2 = String(conv.participant_2 || "").trim();
-      
       // Check if both participants match (order doesn't matter)
       return (
-        (p1 === normalizedUserId && p2 === normalizedOwnerId) ||
-        (p1 === normalizedOwnerId && p2 === normalizedUserId)
+        (conv.participant_1 === userId && conv.participant_2 === ownerId) ||
+        (conv.participant_1 === ownerId && conv.participant_2 === userId)
       );
     });
 
@@ -126,8 +108,8 @@ export async function GET(request: Request) {
       const { data: newConversation, error: createConversationError } = await supabaseAdmin
         .from("conversations")
         .insert({
-          participant_1: normalizedUserId,
-          participant_2: normalizedOwnerId,
+          participant_1: userId,
+          participant_2: ownerId,
           listing_id: normalizedListingId,
         })
         .select()

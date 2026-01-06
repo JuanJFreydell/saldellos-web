@@ -1,39 +1,48 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { User } from "@/supabase/types/users";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import type { UserProfile } from "@/supabase/types/users";
 
 export default function LoggedUserPage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!authLoading && !user) {
       router.push("/");
-    } else if (status === "authenticated" && session?.user?.email) {
-      fetchUserData();
+    } else if (user) {
+      fetchUserProfile();
     }
-  }, [status, session, router]);
+  }, [user, authLoading, router]);
 
-  async function fetchUserData() {
+  async function fetchUserProfile() {
+    if (!user) return;
+    
     try {
-      const response = await fetch("/api/user");
-      if (response.ok) {
-        const data = await response.json();
-        setUserData(data);
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("auth_user_id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user profile:", error);
+      } else {
+        setUserProfile(data);
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("Error fetching user profile:", error);
     } finally {
       setLoading(false);
     }
   }
 
-  if (status === "loading" || loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-lg">Cargando...</p>
@@ -41,7 +50,7 @@ export default function LoggedUserPage() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     return null;
   }
 
@@ -72,7 +81,10 @@ export default function LoggedUserPage() {
               Mensajes
             </button>
             <button
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={async () => {
+                await signOut();
+                router.push("/");
+              }}
               className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
             >
               Cerrar sesión
@@ -86,7 +98,7 @@ export default function LoggedUserPage() {
               Correo electrónico
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.email || session.user?.email || "N/A"}
+              {user.email || "N/A"}
             </p>
           </div>
 
@@ -94,8 +106,8 @@ export default function LoggedUserPage() {
             <h2 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
               ID de usuario
             </h2>
-            <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.user_id || "N/A"}
+            <p className="text-lg text-black dark:text-zinc-50 font-mono text-sm">
+              {user.id || "N/A"}
             </p>
           </div>
 
@@ -104,7 +116,7 @@ export default function LoggedUserPage() {
               Nombres
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.first_names || "No proporcionado"}
+              {userProfile?.first_names || user.user_metadata?.first_names || "No proporcionado"}
             </p>
           </div>
 
@@ -113,7 +125,7 @@ export default function LoggedUserPage() {
               Apellidos
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.last_names || "No proporcionado"}
+              {userProfile?.last_names || user.user_metadata?.last_names || "No proporcionado"}
             </p>
           </div>
 
@@ -122,7 +134,7 @@ export default function LoggedUserPage() {
               Estado
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.status || "N/A"}
+              {userProfile?.status || "N/A"}
             </p>
           </div>
 
@@ -131,8 +143,10 @@ export default function LoggedUserPage() {
               Fecha de registro
             </h2>
             <p className="text-lg text-black dark:text-zinc-50">
-              {userData?.join_date
-                ? new Date(userData.join_date).toLocaleDateString()
+              {userProfile?.join_date
+                ? new Date(userProfile.join_date).toLocaleDateString()
+                : user.created_at
+                ? new Date(user.created_at).toLocaleDateString()
                 : "N/A"}
             </p>
           </div>

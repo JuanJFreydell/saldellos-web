@@ -1,8 +1,9 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, FormEvent, Suspense } from "react";
+import { useAuth } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/api-client";
 
 interface ListingData {
   listing_id: string;
@@ -42,7 +43,7 @@ interface Subcategory {
 }
 
 function EditListingContent() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const listingId = searchParams.get("listing_id");
@@ -82,12 +83,12 @@ function EditListingContent() {
   });
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!authLoading && !user) {
       router.push("/");
-    } else if (status === "authenticated" && listingId) {
+    } else if (user && listingId) {
       fetchInitialData();
     }
-  }, [status, router, listingId]);
+  }, [user, authLoading, router, listingId]);
 
   async function fetchInitialData() {
     if (!listingId) return;
@@ -112,7 +113,7 @@ function EditListingContent() {
       setSubcategories(subcategoriesData.subcategories || []);
 
       // Fetch listing data
-      const response = await fetch(`/api/manageListings?listing_id=${listingId}`);
+      const response = await authenticatedFetch(`/api/manageListings?listing_id=${listingId}`);
       if (!response.ok) {
         throw new Error("Failed to fetch listing");
       }
@@ -382,7 +383,7 @@ function EditListingContent() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-lg">Cargando...</p>
@@ -390,7 +391,7 @@ function EditListingContent() {
     );
   }
 
-  if (status === "unauthenticated" || !listingId) {
+  if (!authLoading && !user || !listingId) {
     return null;
   }
 

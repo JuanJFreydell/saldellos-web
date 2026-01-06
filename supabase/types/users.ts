@@ -1,29 +1,30 @@
-// TypeScript types for the users table
-export interface User {
-  user_id: string; // UUID
+// TypeScript types for the user_profiles table
+// Note: auth_user_id references auth.users(id) from Supabase Auth
+export interface UserProfile {
+  auth_user_id: string; // UUID - references auth.users(id)
   status: string;
   join_date: string; // ISO timestamp string
   first_names: string | null;
   last_names: string | null;
-  email: string;
-  nextauth_id: string | null;
+  created_at: string; // ISO timestamp string
+  updated_at: string; // ISO timestamp string
 }
 
-export interface InsertUser {
-  user_id?: string; // Optional, will be generated if not provided
-  status?: string; // Optional, defaults to 'active'
-  join_date?: string; // Optional, defaults to NOW()
+export interface InsertUserProfile {
+  auth_user_id: string;
+  status?: string;
+  join_date?: string;
   first_names?: string | null;
   last_names?: string | null;
-  email: string;
-  nextauth_id?: string | null;
 }
 
-export interface UpdateUser {
+export interface UpdateUserProfile {
   status?: string;
   first_names?: string | null;
   last_names?: string | null;
-  email?: string;
-  nextauth_id?: string | null;
 }
 
+// Legacy type alias for backward compatibility during migration
+export type User = UserProfile;
+export type InsertUser = InsertUserProfile;
+export type UpdateUser = UpdateUserProfile;

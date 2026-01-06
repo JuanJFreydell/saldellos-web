@@ -1,15 +1,14 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { getAuthenticatedUser, getUserProfile } from "@/lib/auth-server";
 import { randomUUID } from "crypto";
 
 export async function GET(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,22 +19,11 @@ export async function GET(request: Request) {
       );
     }
 
-    // 2. Get user from database
-    const { data: user, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile from database
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (user.status !== "active") {
-      return NextResponse.json(
-        { error: "Account is not active" },
-        { status: 403 }
-      );
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
     // 3. Check if requesting a single listing
@@ -57,7 +45,7 @@ export async function GET(request: Request) {
         );
       }
 
-      if (listing.owner_id !== user.user_id) {
+      if (listing.owner_id !== authUser.id) {
         return NextResponse.json(
           { error: "Forbidden: You are not the owner of this listing" },
           { status: 403 }
@@ -86,7 +74,7 @@ export async function GET(request: Request) {
     const { data: userListings, error: userListingsError } = await adminClient
       .from("listings")
       .select("listing_id, title, thumbnail, price, create_date, status, subcategory_id")
-      .eq("owner_id", user.user_id)
+      .eq("owner_id", authUser.id)
       .order("create_date", { ascending: false });
 
     if (userListingsError) {
@@ -175,9 +163,9 @@ interface CreateListingRequest {
 export async function POST(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -191,22 +179,11 @@ export async function POST(request: Request) {
     // TypeScript: supabaseAdmin is guaranteed to be non-null here
     const adminClient = supabaseAdmin;
 
-    // 2. Get user from database and validate active status
-    const { data: user, error: userError } = await adminClient
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile and validate active status
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (user.status !== "active") {
-      return NextResponse.json(
-        { error: "Account is not active" },
-        { status: 403 }
-      );
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
     // 3. Parse and validate request body
@@ -221,7 +198,7 @@ export async function POST(request: Request) {
     }
 
     // Verify owner_id matches authenticated user
-    if (body.owner_id !== user.user_id.toString()) {
+    if (body.owner_id !== authUser.id) {
       return NextResponse.json(
         { error: "owner_id must match authenticated user" },
         { status: 403 }
@@ -518,9 +495,9 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -531,18 +508,14 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // 2. Get user from database
-    const { data: user, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
-    if (user.status !== "active") {
+    if (userProfile.status !== "active") {
       return NextResponse.json(
         { error: "Account is not active" },
         { status: 403 }
@@ -575,7 +548,7 @@ export async function DELETE(request: Request) {
     }
 
     // 5. Verify user is the owner
-    if (listing.owner_id !== user.user_id) {
+    if (listing.owner_id !== authUser.id) {
       return NextResponse.json(
         { error: "Forbidden: You are not the owner of this listing" },
         { status: 403 }
@@ -650,9 +623,9 @@ export async function DELETE(request: Request) {
 export async function PATCH(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
 
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -663,18 +636,14 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // 2. Get user from database
-    const { data: user, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
-    if (user.status !== "active") {
+    if (userProfile.status !== "active") {
       return NextResponse.json(
         { error: "Account is not active" },
         { status: 403 }
@@ -709,7 +678,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    if (listing.owner_id !== user.user_id) {
+    if (listing.owner_id !== authUser.id) {
       return NextResponse.json(
         { error: "Forbidden: You are not the owner of this listing" },
         { status: 403 }

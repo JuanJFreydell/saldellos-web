@@ -1,13 +1,13 @@
 "use client";
 
-import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth";
 import SignUpModal from "./SignUpModal";
 import SignInModal from "./SignInModal";
 
 export default function Header() {
-  const { data: session, status } = useSession();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
@@ -21,7 +21,7 @@ export default function Header() {
         >
           Saldellos
         </h1>
-        {status === "authenticated" && session ? (
+        {!loading && user ? (
           <div className="flex gap-2">
             <button
               onClick={() => router.push("/mensajes")}
@@ -36,7 +36,10 @@ export default function Header() {
               Mi Perfil
             </button>
             <button
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={async () => {
+                await signOut();
+                router.push("/");
+              }}
               className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
             >
               Cerrar sesión

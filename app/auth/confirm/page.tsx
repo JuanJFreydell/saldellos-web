@@ -21,7 +21,8 @@ function AuthConfirmContent() {
         const access_token = hashParams.get("access_token");
         const type = hashParams.get("type");
 
-        if (type === "signup" && access_token) {
+        // Handle both email confirmation (signup) and OAuth (google, etc.)
+        if (access_token) {
           // Set the session using the access token
           const { data, error } = await supabase.auth.setSession({
             access_token,
@@ -33,30 +34,20 @@ function AuthConfirmContent() {
           }
 
           if (data.user) {
-            // Sync user with our users table
-            try {
-              await fetch("/api/auth/sync-user", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  supabaseUserId: data.user.id,
-                  email: data.user.email,
-                  firstNames: data.user.user_metadata?.first_names || null,
-                  lastNames: data.user.user_metadata?.last_names || null,
-                }),
-              });
-            } catch (syncError) {
-              console.error("Error syncing user:", syncError);
-            }
+            // User profile is automatically created by database trigger
+            // No need to sync manually
 
-            setStatus("success");
-            setMessage("¡Email confirmado exitosamente! Redirigiendo...");
+            if (type === "signup") {
+              setStatus("success");
+              setMessage("¡Email confirmado exitosamente! Redirigiendo...");
+            } else {
+              setStatus("success");
+              setMessage("¡Sesión iniciada exitosamente! Redirigiendo...");
+            }
             
-            // Redirect to signin page after 2 seconds
+            // Redirect to logged user page after 2 seconds
             setTimeout(() => {
-              router.push("/auth/signin?confirmed=true");
+              router.push("/loggedUserPage");
             }, 2000);
           }
         } else {
@@ -130,10 +121,10 @@ function AuthConfirmContent() {
               </div>
               <p className="text-lg text-red-700 dark:text-red-400 mb-4">{message}</p>
               <button
-                onClick={() => router.push("/auth/signin")}
+                onClick={() => router.push("/")}
                 className="rounded-lg bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 transition-colors"
               >
-                Volver a iniciar sesión
+                Volver al inicio
               </button>
             </>
           )}

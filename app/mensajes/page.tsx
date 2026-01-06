@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/api-client";
 import Header from "../components/Header";
 
 interface Participant {
@@ -45,7 +46,7 @@ interface ConversationsResponse {
 }
 
 export default function MensagesPage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -56,18 +57,18 @@ export default function MensagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!authLoading && !user) {
       router.push("/");
       return;
     }
-    if (status === "authenticated") {
+    if (user) {
       fetchConversations();
     }
-  }, [status, router]);
+  }, [user, authLoading, router]);
 
   // Poll for new messages every 5 seconds
   useEffect(() => {
-    if (status !== "authenticated") {
+    if (!user) {
       return;
     }
 
@@ -77,7 +78,7 @@ export default function MensagesPage() {
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [status]);
+  }, [user]);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -94,7 +95,7 @@ export default function MensagesPage() {
       }
       setError(null);
 
-      const response = await fetch("/api/messages");
+      const response = await authenticatedFetch("/api/messages");
       if (!response.ok) {
         throw new Error("Failed to fetch conversations");
       }
@@ -137,7 +138,7 @@ export default function MensagesPage() {
 
     try {
       setSending(true);
-      const response = await fetch("/api/messages", {
+      const response = await authenticatedFetch("/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -233,7 +234,7 @@ export default function MensagesPage() {
     return lastMessage.messageBody || "Mensaje sin contenido";
   }
 
-  if (status === "loading" || loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
         <Header />

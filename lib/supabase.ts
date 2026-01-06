@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { User, InsertUser, UpdateUser } from '@/supabase/types/users'
+import type { UserProfile, InsertUserProfile, UpdateUserProfile } from '@/supabase/types/users'
 import type { Listing } from '@/supabase/types/listings'
 
 
@@ -38,100 +38,46 @@ export const supabaseAdmin = secretKey
 
 
 
-export async function createListing(listingData: Listing){
+// Helper function to get user profile by auth_user_id
+export async function getUserProfile(authUserId: string): Promise<UserProfile | null> {
   if (!supabaseAdmin) {
     throw new Error('Supabase admin client not configured. Set SUPABASE_SECRET_KEY in .env.local')
   }
+
   const { data, error } = await supabaseAdmin
-  .from('listings')
-  .insert({
-    listing_id: listingData.listing_id,
-    owner_id: listingData.owner_id,
-    title: listingData.title,
-    description: listingData.description,
-    neighborhood_id: listingData.neighborhood_id,
-    listing_date: listingData.listing_date, // ISO timestamp string
-    number_of_prints: listingData.number_of_prints,
-    number_of_visits: listingData.number_of_visits,
-    status: listingData.status
-  })
-  .select()
-  .single()
-
-if (error) {
-  console.error('Error creating listing:', error)
-  return null
-}
-
-return data
-}
-
-
-// email: profile.email,
-// nextauth_id: user.id,
-// first_names: givenName,
-// last_names: familyName,
-// status: 'active',
-
-// Upsert user: checks if user exists by email, creates if not, updates if exists
-// IMPORTANT: Use this in API routes or server components only (uses admin client)
-export async function upsertUser(userData: {
-  email: string;
-  nextauth_id: string;
-  first_names?: string | null;
-  last_names?: string | null;  
-  status?: string;
-}): Promise<User | null> {
-  if (!supabaseAdmin) {
-    throw new Error('Supabase admin client not configured. Set SUPABASE_SECRET_KEY in .env.local')
-  }
-
-  // Check if user exists by email
-  const { data: existingUser } = await supabaseAdmin
-    .from('users')
+    .from('user_profiles')
     .select('*')
-    .eq('email', userData.email)
+    .eq('auth_user_id', authUserId)
     .single()
 
-  if (existingUser) {
-    // User exists - update with new info
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .update({
-        first_names: userData.first_names ?? existingUser.first_names,
-        last_names: userData.last_names ?? existingUser.last_names,
-        nextauth_id: userData.nextauth_id,
-        status: userData.status ?? existingUser.status,
-      })
-      .eq('user_id', existingUser.user_id)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error updating user:', error)
-      return null
-    }
-
-    return data
-  } else {
-    // User doesn't exist - create new
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .insert({
-        email: userData.email,
-        nextauth_id: userData.nextauth_id,
-        first_names: userData.first_names ?? null,
-        last_names: userData.last_names ?? null,
-        status: userData.status ?? 'active',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error creating user:', error)
-      return null
-    }
-
-    return data
+  if (error) {
+    console.error('Error fetching user profile:', error)
+    return null
   }
+
+  return data
+}
+
+// Helper function to update user profile
+export async function updateUserProfile(
+  authUserId: string,
+  updates: UpdateUserProfile
+): Promise<UserProfile | null> {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client not configured. Set SUPABASE_SECRET_KEY in .env.local')
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('user_profiles')
+    .update(updates)
+    .eq('auth_user_id', authUserId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating user profile:', error)
+    return null
+  }
+
+  return data
 }

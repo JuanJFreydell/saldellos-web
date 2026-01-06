@@ -1,7 +1,6 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { getAuthenticatedUser, getUserProfile } from "@/lib/auth-server";
 
 //---- GET MESSAGES ----
 // gets conversationIDs by user
@@ -11,9 +10,9 @@ import { authOptions } from "../auth/[...nextauth]/route";
 export async function GET(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -24,25 +23,14 @@ export async function GET(request: Request) {
       );
     }
 
-    // 2. Get user from database
-    const { data: user, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
-    if (user.status !== "active") {
-      return NextResponse.json(
-        { error: "Account is not active" },
-        { status: 403 }
-      );
-    }
-
-    const userId = user.user_id.toString();
+    const userId = authUser.id;
 
     // 3. Get all conversations where user is a participant
     const { data: conversations, error: conversationsError } = await supabaseAdmin
@@ -76,24 +64,24 @@ export async function GET(request: Request) {
 
         // Get current user's info
         const currentUserInfo = {
-          user_id: user.user_id,
-          first_names: user.first_names,
-          last_names: user.last_names,
+          user_id: authUser.id,
+          first_names: userProfile.first_names,
+          last_names: userProfile.last_names,
         };
 
         // Get other participant's user info
         let otherParticipant = null;
         if (otherParticipantId) {
-          const { data: participantData } = await adminClient
-            .from("users")
-            .select("user_id, first_names, last_names")
-            .eq("user_id", otherParticipantId)
+          const { data: participantProfile } = await adminClient
+            .from("user_profiles")
+            .select("auth_user_id, first_names, last_names")
+            .eq("auth_user_id", otherParticipantId)
             .single();
-          otherParticipant = participantData
+          otherParticipant = participantProfile
             ? {
-                user_id: participantData.user_id,
-                first_names: participantData.first_names,
-                last_names: participantData.last_names,
+                user_id: participantProfile.auth_user_id,
+                first_names: participantProfile.first_names,
+                last_names: participantProfile.last_names,
               }
             : null;
         }
@@ -126,7 +114,7 @@ export async function GET(request: Request) {
         const { data: messages, error: messagesError } = await adminClient
           .from("messages")
           .select("*")
-          .eq("chat_id", conversation.conversation_id.toString())
+          .eq("conversation_id", conversation.conversation_id.toString())
           .order("time_sent", { ascending: true });
 
         if (messagesError) {
@@ -175,9 +163,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthenticatedUser(request);
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -188,22 +176,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Get user from database
-    const { data: user, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", session.user.email)
-      .single();
+    // 2. Get user profile
+    const userProfile = await getUserProfile(authUser.id);
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (user.status !== "active") {
-      return NextResponse.json(
-        { error: "Account is not active" },
-        { status: 403 }
-      );
+    if (!userProfile) {
+      return NextResponse.json({ error: "User profile not found or inactive" }, { status: 404 });
     }
 
     // 3. Parse request body
@@ -225,8 +202,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const userId = user.user_id.toString();
-    const normalizedUserId = userId.trim();
+    const userId = authUser.id;
     const normalizedConversationId = conversation_id.trim();
 
     // 5. Verify user is a participant in the conversation
@@ -243,10 +219,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user is participant_1 or participant_2 (normalize for comparison)
-    const p1 = String(conversation.participant_1 || "").trim();
-    const p2 = String(conversation.participant_2 || "").trim();
-    const isParticipant = p1 === normalizedUserId || p2 === normalizedUserId;
+    // Check if user is participant_1 or participant_2
+    const isParticipant = conversation.participant_1 === userId || conversation.participant_2 === userId;
 
     if (!isParticipant) {
       return NextResponse.json(
@@ -257,13 +231,11 @@ export async function POST(request: Request) {
 
     // 6. Create message entry
     // message_id is auto-generated by the database (UUID)
-    const timeSent = new Date().toISOString();
     const { data: message, error: messageError } = await supabaseAdmin
       .from("messages")
       .insert({
-        chat_id: normalizedConversationId,
-        sent_by: normalizedUserId,
-        time_sent: timeSent,
+        conversation_id: normalizedConversationId,
+        sent_by: userId,
         message_body: messageBody.trim(),
       })
       .select()
