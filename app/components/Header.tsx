@@ -95,7 +95,7 @@ export default function Header() {
           <div className="flex gap-2">
             <button
               onClick={() => setIsSignUpOpen(true)}
-              className="flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              className="hidden md:flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               <svg
                 className="h-5 w-5"
@@ -129,7 +129,8 @@ export default function Header() {
                   d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                 />
               </svg>
-              Iniciar Sesión
+              <span className="md:hidden">Ingresar</span>
+              <span className="hidden md:inline">Iniciar Sesión</span>
             </button>
           </div>
         )}

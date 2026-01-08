@@ -143,14 +143,14 @@ export default function SignUpModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full max-w-md rounded-lg bg-white p-8 shadow-xl dark:bg-gray-800 mx-4">
+      <div className="relative w-full max-w-md max-h-[90vh] rounded-lg bg-white shadow-xl dark:bg-gray-800 mx-4 flex flex-col overflow-hidden">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
         >
           <svg
             className="h-6 w-6"
@@ -166,7 +166,7 @@ export default function SignUpModal({
             />
           </svg>
         </button>
-
+        <div className="overflow-y-auto p-6 md:p-8">
         <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
           Crear cuenta
         </h1>
@@ -339,6 +339,7 @@ export default function SignUpModal({
               Inicia sesión
             </button>
           </p>
+        </div>
         </div>
       </div>
     </div>
