@@ -358,7 +358,7 @@ function EditListingContent() {
         throw new Error("País, ciudad y barrio son obligatorios cuando se actualiza la ubicación");
       }
 
-      const response = await fetch("/api/manageListings", {
+      const response = await authenticatedFetch("/api/manageListings", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

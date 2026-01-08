@@ -297,7 +297,7 @@ export default function ListarPage() {
       requestBody.city = formData.city;
       requestBody.neighborhood = formData.neighborhood;
 
-      const response = await fetch("/api/manageListings", {
+      const response = await authenticatedFetch("/api/manageListings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
