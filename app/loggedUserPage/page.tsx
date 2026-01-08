@@ -64,19 +64,19 @@ export default function LoggedUserPage() {
           <div className="flex gap-2">
             <button
               onClick={() => router.push("/listar")}
-              className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Crear listado
             </button>
             <button
               onClick={() => router.push("/misListados")}
-              className="rounded-full bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Mis listados
             </button>
             <button
               onClick={() => router.push("/mensajes")}
-              className="rounded-full bg-purple-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
+              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Mensajes
             </button>
@@ -85,7 +85,7 @@ export default function LoggedUserPage() {
                 await signOut();
                 router.push("/");
               }}
-              className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
+              className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
             >
               Cerrar sesión
             </button>

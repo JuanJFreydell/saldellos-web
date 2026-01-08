@@ -91,7 +91,7 @@ export default function MisListadosPage() {
           </h1>
           <button
             onClick={() => router.push("/loggedUserPage")}
-            className="rounded-full bg-gray-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-600"
+            className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
           >
             Volver al perfil
           </button>
@@ -110,7 +110,7 @@ export default function MisListadosPage() {
             </p>
             <button
               onClick={() => router.push("/listar")}
-              className="mt-4 rounded-full bg-blue-500 px-6 py-2 text-white font-medium hover:bg-blue-600 transition-colors"
+              className="mt-4 rounded-full bg-black px-6 py-2 text-white font-medium hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Crea tu primer listado
             </button>
@@ -224,13 +224,13 @@ function ListingCard({
           <div className="mt-4 flex gap-2">
             <button
               onClick={() => router.push(`/editListing?listing_id=${listing.listing_id}`)}
-              className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Editar listado
             </button>
             <button
               onClick={() => onDelete(listing.listing_id)}
-              className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
+              className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
             >
               Eliminar listado
             </button>

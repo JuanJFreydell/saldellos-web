@@ -191,7 +191,7 @@ export default function SignInModal({
               <button
                 type="button"
                 onClick={onForgotPassword}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-sm text-black dark:text-white hover:underline"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -201,7 +201,7 @@ export default function SignInModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
           >
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
@@ -250,7 +250,7 @@ export default function SignInModal({
             ¿No tienes una cuenta?{" "}
             <button
               onClick={onSwitchToSignUp}
-              className="text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-black dark:text-white hover:underline"
             >
               Regístrate
             </button>

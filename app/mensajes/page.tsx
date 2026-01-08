@@ -256,7 +256,7 @@ export default function MensagesPage() {
             <p className="text-lg text-red-600 dark:text-red-400 mb-4">{error}</p>
             <button
               onClick={() => fetchConversations()}
-              className="rounded-lg bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 transition-colors"
+              className="rounded-lg bg-black px-6 py-2 text-white hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               Reintentar
             </button>
@@ -294,7 +294,7 @@ export default function MensagesPage() {
                     onClick={() => setSelectedConversation(conversation)}
                     className={`w-full p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                       isSelected
-                        ? "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500"
+                        ? "bg-gray-100 dark:bg-gray-800 border-l-4 border-black dark:border-white"
                         : ""
                     }`}
                   >
@@ -374,7 +374,7 @@ export default function MensagesPage() {
                       onClick={() =>
                         router.push(`/listings/${selectedConversation.listing_id}`)
                       }
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      className="text-sm text-black dark:text-white hover:underline"
                     >
                       Ver listado
                     </button>
@@ -404,7 +404,7 @@ export default function MensagesPage() {
                         <div
                           className={`max-w-[70%] rounded-lg p-3 ${
                             isCurrentUser
-                              ? "bg-blue-500 text-white"
+                              ? "bg-black text-white dark:bg-white dark:text-black"
                               : "bg-gray-200 dark:bg-gray-700 text-black dark:text-zinc-50"
                           }`}
                         >
@@ -443,7 +443,7 @@ export default function MensagesPage() {
                   <button
                     onClick={sendMessage}
                     disabled={!messageText.trim() || sending}
-                    className="rounded-lg bg-blue-500 px-6 py-2 text-white font-medium hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="rounded-lg bg-black px-6 py-2 text-white font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
                   >
                     {sending ? "Enviando..." : "Enviar"}
                   </button>

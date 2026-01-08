@@ -285,7 +285,7 @@ export default function SignUpModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-green-500 px-6 py-3 font-medium text-white hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
           >
             {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
@@ -334,7 +334,7 @@ export default function SignUpModal({
             ¿Ya tienes una cuenta?{" "}
             <button
               onClick={onSwitchToSignIn}
-              className="text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-black dark:text-white hover:underline"
             >
               Inicia sesión
             </button>

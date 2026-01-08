@@ -244,7 +244,7 @@ export default function ListingDetailPage() {
                   {!showMessageForm ? (
                     <button
                       onClick={() => setShowMessageForm(true)}
-                      className="w-full rounded-lg bg-green-500 px-6 py-3 text-white font-medium hover:bg-green-600 transition-colors"
+                      className="w-full rounded-lg bg-black px-6 py-3 text-white font-medium hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
                     >
                       Contactar al vendedor
                     </button>
@@ -262,7 +262,7 @@ export default function ListingDetailPage() {
                         <button
                           onClick={sendMessage}
                           disabled={!messageText.trim() || sending}
-                          className="flex-1 rounded-lg bg-green-500 px-6 py-2 text-white font-medium hover:bg-green-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          className="flex-1 rounded-lg bg-black px-6 py-2 text-white font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
                         >
                           {sending ? "Enviando..." : "Enviar"}
                         </button>
@@ -272,7 +272,7 @@ export default function ListingDetailPage() {
                             setMessageText("");
                             setError(null);
                           }}
-                          className="rounded-lg bg-gray-500 px-4 py-2 text-white font-medium hover:bg-gray-600 transition-colors"
+                          className="rounded-lg bg-white border border-black px-4 py-2 text-black font-medium hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
                         >
                           Cancelar
                         </button>
@@ -286,7 +286,7 @@ export default function ListingDetailPage() {
               ) : (
                 <button
                   onClick={() => router.push("/")}
-                  className="w-full rounded-lg bg-green-500 px-6 py-3 text-white font-medium hover:bg-green-600 transition-colors"
+                  className="w-full rounded-lg bg-black px-6 py-3 text-white font-medium hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
                 >
                   Inicia sesión para contactar al vendedor
                 </button>

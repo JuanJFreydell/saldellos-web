@@ -283,8 +283,8 @@ export default function Home() {
                       onClick={() => handleCityToggle(city.city_name, city.city_id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         isSelected
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
-                          : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                          ? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                          : "bg-white text-black border border-black hover:bg-gray-50 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-800"
                       }`}
                     >
                       <span>{city.city_name}</span>
@@ -343,8 +343,8 @@ export default function Home() {
                       }
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         isSelected
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
-                          : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                          ? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                          : "bg-white text-black border border-black hover:bg-gray-50 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-800"
                       }`}
                     >
                       <span>{neighborhood.neighborhood_name}</span>
@@ -402,8 +402,8 @@ export default function Home() {
                       onClick={() => handleSubcategoryToggle(subcategory.subcategory_name)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         isSelected
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
-                          : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                          ? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                          : "bg-white text-black border border-black hover:bg-gray-50 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-800"
                       }`}
                     >
                       <span>{subcategory.subcategory_name}</span>

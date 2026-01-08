@@ -159,7 +159,7 @@ export default function ForgotPasswordModal({
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full rounded-lg bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               {loading ? "Enviando..." : "Enviar enlace de restablecimiento"}
             </button>
@@ -169,7 +169,7 @@ export default function ForgotPasswordModal({
         {success && (
           <button
             onClick={onClose}
-            className="mt-4 w-full rounded-lg bg-gray-500 px-6 py-3 font-medium text-white hover:bg-gray-600 transition-colors"
+            className="mt-4 w-full rounded-lg bg-white border border-black px-6 py-3 font-medium text-black hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
           >
             Cerrar
           </button>
