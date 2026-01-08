@@ -60,6 +60,10 @@ export default function Home() {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string>(""); // neighborhood_name
   const [selectedNeighborhoodId, setSelectedNeighborhoodId] = useState<string>(""); // neighborhood_id
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(""); // subcategory_name
+  
+  // Mobile dropdown state - only one can be open at a time
+  const [openDropdown, setOpenDropdown] = useState<"city" | "neighborhood" | "subcategory" | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
 
   // Check if there are more batches
   const hasMoreBatches = listings.length === 100;
@@ -236,6 +240,23 @@ export default function Home() {
     fetchListings(1);
   }, [selectedCity, selectedNeighborhood, initialLoad, colombiaId]);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [openDropdown]);
+
   const handleNextBatch = () => {
     if (hasMoreBatches) {
       const nextBatch = currentBatch + 1;
@@ -257,8 +278,248 @@ export default function Home() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Search Filters - Button Based */}
-        <div className="flex flex-col md:h-[200px] md:flex-row justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 mb-8 overflow-clip">
+        {/* Search Filters - Mobile: Dropdowns, Desktop: Button Grid */}
+        {/* Mobile: Horizontal Dropdowns */}
+        <div className="md:hidden mb-6 relative">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {/* City Dropdown */}
+            <div className="relative shrink-0 dropdown-container z-50">
+              <button
+                type="button"
+                onClick={(e) => {
+                  if (openDropdown === "city") {
+                    setOpenDropdown(null);
+                    setDropdownPosition(null);
+                  } else {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setDropdownPosition({ top: rect.bottom + 8, left: rect.left });
+                    setOpenDropdown("city");
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <span>{selectedCity || "Ciudad"}</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${openDropdown === "city" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {openDropdown === "city" && dropdownPosition && (
+                <>
+                  <div className="fixed inset-0 z-[998]" onClick={() => { setOpenDropdown(null); setDropdownPosition(null); }}></div>
+                  <div 
+                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
+                    style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
+                  >
+                  {loadingCities ? (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                      Cargando ciudades...
+                    </div>
+                  ) : cities.length === 0 ? (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                      No hay ciudades disponibles
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      {cities.map((city) => {
+                        const isSelected = selectedCity === city.city_name;
+                        return (
+                          <button
+                            key={city.city_id}
+                            type="button"
+                            onClick={() => {
+                              handleCityToggle(city.city_name, city.city_id);
+                              setOpenDropdown(null);
+                              setDropdownPosition(null);
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                              isSelected
+                                ? "bg-black text-white dark:bg-white dark:text-black"
+                                : "text-gray-700 dark:text-gray-300"
+                            }`}
+                          >
+                            {city.city_name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Neighborhood Dropdown */}
+            <div className="relative shrink-0 dropdown-container z-50">
+              <button
+                type="button"
+                onClick={(e) => {
+                  if (!selectedCity) return;
+                  if (openDropdown === "neighborhood") {
+                    setOpenDropdown(null);
+                    setDropdownPosition(null);
+                  } else {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setDropdownPosition({ top: rect.bottom + 8, left: rect.left });
+                    setOpenDropdown("neighborhood");
+                  }
+                }}
+                disabled={!selectedCity}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-colors ${
+                  !selectedCity
+                    ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                }`}
+              >
+                <span>{selectedNeighborhood || "Barrio"}</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${openDropdown === "neighborhood" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {openDropdown === "neighborhood" && selectedCity && dropdownPosition && (
+                <>
+                  <div className="fixed inset-0 z-[998]" onClick={() => { setOpenDropdown(null); setDropdownPosition(null); }}></div>
+                  <div 
+                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
+                    style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
+                  >
+                  {loadingNeighborhoods ? (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                      Cargando barrios...
+                    </div>
+                  ) : neighborhoods.length === 0 ? (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                      No hay barrios disponibles
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      {neighborhoods.map((neighborhood) => {
+                        const isSelected = selectedNeighborhood === neighborhood.neighborhood_name;
+                        return (
+                          <button
+                            key={neighborhood.neighborhood_id}
+                            type="button"
+                            onClick={() => {
+                              handleNeighborhoodToggle(neighborhood.neighborhood_name, neighborhood.neighborhood_id);
+                              setOpenDropdown(null);
+                              setDropdownPosition(null);
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                              isSelected
+                                ? "bg-black text-white dark:bg-white dark:text-black"
+                                : "text-gray-700 dark:text-gray-300"
+                            }`}
+                          >
+                            {neighborhood.neighborhood_name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Subcategory Dropdown */}
+            <div className="relative shrink-0 dropdown-container z-50">
+              <button
+                type="button"
+                onClick={(e) => {
+                  if (openDropdown === "subcategory") {
+                    setOpenDropdown(null);
+                    setDropdownPosition(null);
+                  } else {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setDropdownPosition({ top: rect.bottom + 8, left: rect.left });
+                    setOpenDropdown("subcategory");
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <span>{selectedSubcategory || "Subcategoría"}</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${openDropdown === "subcategory" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {openDropdown === "subcategory" && dropdownPosition && (
+                <>
+                  <div className="fixed inset-0 z-[998]" onClick={() => { setOpenDropdown(null); setDropdownPosition(null); }}></div>
+                  <div 
+                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
+                    style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
+                  >
+                  {loadingSubcategories ? (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                      Cargando subcategorías...
+                    </div>
+                  ) : subcategories.length === 0 ? (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                      No hay subcategorías disponibles
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      {subcategories.map((subcategory) => {
+                        const isSelected = selectedSubcategory === subcategory.subcategory_name;
+                        return (
+                          <button
+                            key={subcategory.subcategory_id}
+                            type="button"
+                            onClick={() => {
+                              handleSubcategoryToggle(subcategory.subcategory_name);
+                              setOpenDropdown(null);
+                              setDropdownPosition(null);
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                              isSelected
+                                ? "bg-black text-white dark:bg-white dark:text-black"
+                                : "text-gray-700 dark:text-gray-300"
+                            }`}
+                          >
+                            {subcategory.subcategory_name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop: Button Grid (Original Design) */}
+        <div className="hidden md:flex md:h-[200px] md:flex-row justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 mb-8 overflow-clip">
           {/* City Section */}
           <div className="mb-6 w-1/4">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -323,7 +584,7 @@ export default function Home() {
               ) : loadingNeighborhoods ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                   Cargando barrios...
-          </p>
+                </p>
               ) : neighborhoods.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                   No hay barrios disponibles para esta ciudad
@@ -368,20 +629,19 @@ export default function Home() {
                 })
               )}
             </div>
-        </div>
+          </div>
 
           {/* Subcategory Section */}
           <div className="w-1/2 h-max">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               Tipo de artículo (Subcategoría)
             </h3>
-            {/* Container with fixed height and vertical scroll */}
             <div
               className="flex flex-wrap gap-2"
               style={{
                 maxHeight: "150px",
                 overflowY: "auto",
-                paddingRight: "4px" // Provide some space for scrollbar if needed
+                paddingRight: "4px"
               }}
             >
               {loadingSubcategories ? (
