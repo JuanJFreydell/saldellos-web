@@ -1,7 +1,6 @@
 "use client";
 
-import { useAuth } from "@/lib/auth";
-import { authenticatedFetch } from "@/lib/api-client";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 
@@ -26,7 +25,7 @@ interface Subcategory {
 }
 
 export default function ListarPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,18 +62,18 @@ export default function ListarPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (status === "unauthenticated") {
       router.push("/");
     }
-  }, [user, authLoading, router]);
+  }, [status, router]);
 
   // Fetch countries and subcategories on mount
   useEffect(() => {
-    if (user) {
+    if (status === "authenticated") {
       fetchCountries();
       fetchSubcategories();
     }
-  }, [user]);
+  }, [status]);
 
   // Fetch cities when country is selected
   useEffect(() => {
@@ -169,7 +168,7 @@ export default function ListarPage() {
   }
 
   // Show loading state
-  if (authLoading) {
+  if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-lg">Cargando...</p>
@@ -178,7 +177,7 @@ export default function ListarPage() {
   }
 
   // Don't render form if not authenticated
-  if (!authLoading && !user) {
+  if (status === "unauthenticated") {
     return null;
   }
 
@@ -245,7 +244,7 @@ export default function ListarPage() {
       return;
     }
 
-    if (!user) {
+    if (!session?.user?.email) {
       setError("Sesión de usuario no encontrada");
       setLoading(false);
       return;
@@ -297,7 +296,7 @@ export default function ListarPage() {
       requestBody.city = formData.city;
       requestBody.neighborhood = formData.neighborhood;
 
-      const response = await authenticatedFetch("/api/manageListings", {
+      const response = await fetch("/api/manageListings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -341,8 +340,6 @@ export default function ListarPage() {
     }
   };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12 px-4">
       <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
         <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
           Crear nuevo listado
