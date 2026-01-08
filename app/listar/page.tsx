@@ -1,8 +1,9 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
+import { authenticatedFetch } from "@/lib/api-client";
 
 interface Country {
   country_id: string;
@@ -25,7 +26,7 @@ interface Subcategory {
 }
 
 export default function ListarPage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,18 +63,18 @@ export default function ListarPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!authLoading && !user) {
       router.push("/");
     }
-  }, [status, router]);
+  }, [user, authLoading, router]);
 
   // Fetch countries and subcategories on mount
   useEffect(() => {
-    if (status === "authenticated") {
+    if (user) {
       fetchCountries();
       fetchSubcategories();
     }
-  }, [status]);
+  }, [user]);
 
   // Fetch cities when country is selected
   useEffect(() => {
@@ -168,7 +169,7 @@ export default function ListarPage() {
   }
 
   // Show loading state
-  if (status === "loading") {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-lg">Cargando...</p>
@@ -177,7 +178,7 @@ export default function ListarPage() {
   }
 
   // Don't render form if not authenticated
-  if (status === "unauthenticated") {
+  if (!user) {
     return null;
   }
 
@@ -244,8 +245,8 @@ export default function ListarPage() {
       return;
     }
 
-    if (!session?.user?.email) {
-      setError("Sesión de usuario no encontrada");
+    if (!user) {
+      setError("Usuario no autenticado");
       setLoading(false);
       return;
     }
@@ -263,16 +264,10 @@ export default function ListarPage() {
       return;
     }
 
-    // Get user_id from API
-    try {
-      const userResponse = await fetch("/api/user");
-      if (!userResponse.ok) {
-        const errorData = await userResponse.json().catch(() => ({ error: "Error desconocido" }));
-        throw new Error(errorData.error || `Error al obtener datos del usuario: ${userResponse.status}`);
-      }
-      const userData = await userResponse.json();
-      const ownerId = userData.user_id;
+    // Get owner_id from authenticated user (already validated above)
+    const ownerId = user.id;
 
+    try {
       // Prepare request body matching API expectations
       const requestBody: any = {
         owner_id: ownerId,
@@ -296,7 +291,7 @@ export default function ListarPage() {
       requestBody.city = formData.city;
       requestBody.neighborhood = formData.neighborhood;
 
-      const response = await fetch("/api/manageListings", {
+      const response = await authenticatedFetch("/api/manageListings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -331,7 +326,7 @@ export default function ListarPage() {
 
       // Redirect after success
       setTimeout(() => {
-        router.push("/loggedUserPage");
+        router.push("/misListados");
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error");
@@ -340,6 +335,8 @@ export default function ListarPage() {
     }
   };
 
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12 px-4">
       <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
         <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
           Crear nuevo listado
@@ -627,7 +624,7 @@ export default function ListarPage() {
             </button>
             <button
               type="button"
-              onClick={() => router.push("/loggedUserPage")}
+              onClick={() => router.push("/misListados")}
               className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
             >
               Cancelar
