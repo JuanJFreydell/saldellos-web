@@ -57,7 +57,7 @@ export default function SignInModal({
       // Only close on success, not on error
       onClose();
       router.refresh();
-      router.push("/loggedUserPage");
+      router.push("/");
     } catch (err) {
       // On error, show error message but keep modal open
       setError(err instanceof Error ? err.message : "Ocurrió un error");

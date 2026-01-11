@@ -24,7 +24,7 @@ function AuthConfirmContent() {
           setStatus("success");
           setMessage("¡Sesión iniciada exitosamente! Redirigiendo...");
           setTimeout(() => {
-            router.push("/loggedUserPage");
+            router.push("/");
           }, 1500);
           return;
         }
@@ -66,9 +66,9 @@ function AuthConfirmContent() {
               setMessage("¡Sesión iniciada exitosamente! Redirigiendo...");
             }
             
-            // Redirect to logged user page after 2 seconds
+            // Redirect to home page after 2 seconds
             setTimeout(() => {
-              router.push("/loggedUserPage");
+              router.push("/");
             }, 1500);
           } else {
             throw new Error("No se pudo establecer la sesión");
@@ -88,7 +88,7 @@ function AuthConfirmContent() {
               setStatus("success");
               setMessage("¡Sesión iniciada exitosamente! Redirigiendo...");
               setTimeout(() => {
-                router.push("/loggedUserPage");
+                router.push("/");
               }, 1500);
             } else {
               throw new Error("No se pudo completar la autenticación. Por favor intenta nuevamente.");
