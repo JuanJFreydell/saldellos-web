@@ -269,9 +269,11 @@ export default function MensagesPage() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Header />
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex h-[calc(100vh-80px)] md:h-[calc(100vh-80px)] pb-16 md:pb-0">
         {/* Conversations List Panel */}
-        <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto">
+        <div className={`${
+          selectedConversation ? "hidden md:block" : "block"
+        } w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto`}>
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-black dark:text-zinc-50">
               Conversaciones
@@ -342,11 +344,33 @@ export default function MensagesPage() {
         </div>
 
         {/* Conversation View Panel */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800">
+        <div className={`${
+          selectedConversation ? "flex" : "hidden md:flex"
+        } flex-1 flex-col bg-white dark:bg-gray-800`}>
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
               <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                {/* Back button for mobile */}
+                <button
+                  onClick={() => setSelectedConversation(null)}
+                  className="md:hidden mb-3 flex items-center gap-2 text-black dark:text-white hover:opacity-70 transition-opacity"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">Volver</span>
+                </button>
                 <div className="flex items-center gap-3">
                   {selectedConversation.listing_metadata?.thumbnail ? (
                     <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
