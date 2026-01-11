@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import SignUpModal from "./SignUpModal";
 import SignInModal from "./SignInModal";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import ProfileModal from "./ProfileModal";
 
 export default function Header() {
   const { user, loading, signOut } = useAuth();
@@ -13,6 +14,7 @@ export default function Header() {
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Note: Modals should only close:
   // 1. When user manually closes them (onClose callback)
@@ -77,7 +79,7 @@ export default function Header() {
               onClick={(e) => {
                 e.preventDefault();
                 if (user) {
-                  router.push("/loggedUserPage");
+                  setIsProfileOpen(true);
                 } else {
                   setIsSignInOpen(true);
                 }
@@ -181,6 +183,10 @@ export default function Header() {
         isOpen={isForgotPasswordOpen}
         onClose={() => setIsForgotPasswordOpen(false)}
       />
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+      />
 
       {/* Mobile Bottom Navigation */}
       {!loading && (
@@ -272,7 +278,7 @@ export default function Header() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  router.push("/loggedUserPage");
+                  setIsProfileOpen(true);
                 }}
                 className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
               >
