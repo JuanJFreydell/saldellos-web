@@ -116,17 +116,17 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-start justify-end bg-transparent"
+      className="fixed inset-0 z-[1000] flex items-start justify-end bg-black/60 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none"
       onClick={handleBackdropClick}
     >
       <div
-        className="relative w-full max-w-sm rounded-lg bg-white shadow-2xl dark:bg-gray-800 overflow-hidden mt-16 mr-4"
+        className="relative w-full h-full md:w-full md:max-w-sm md:h-auto md:rounded-lg bg-white shadow-2xl dark:bg-gray-800 overflow-hidden md:mt-16 md:mr-4"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
+        {/* Close button - Desktop only */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="hidden md:block absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
         >
           <svg
             className="h-6 w-6"
@@ -143,7 +143,32 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           </svg>
         </button>
 
-        <div className="overflow-y-auto max-h-[calc(100vh-120px)]">
+        {/* Mobile header with close button */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
+            Cuenta
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto h-full md:max-h-[calc(100vh-120px)]">
           {/* Header Section */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -196,46 +221,25 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
           {/* Account Actions */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={onClose}
-                className="flex flex-col items-center justify-center gap-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-3 text-xs font-medium text-black dark:text-zinc-50 transition-colors"
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 text-sm font-medium text-black dark:text-zinc-50 transition-colors"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                <span>Agregar cuenta</span>
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="flex flex-col items-center justify-center gap-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-3 text-xs font-medium text-black dark:text-zinc-50 transition-colors"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                <span>Cerrar sesión</span>
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>Cerrar sesión</span>
+            </button>
           </div>
 
           {/* Account Information */}
