@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { authenticatedFetch } from "@/lib/api-client";
+import Header from "../components/Header";
 
 interface Country {
   country_id: string;
@@ -171,8 +172,11 @@ export default function ListarPage() {
   // Show loading state
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Cargando...</p>
+      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
+        <Header />
+        <div className="flex items-center justify-center h-[calc(100vh-80px)] pb-16 md:pb-0">
+          <p className="text-lg">Cargando...</p>
+        </div>
       </div>
     );
   }
@@ -336,302 +340,307 @@ export default function ListarPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12 px-4">
-      <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
-        <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
-          Crear nuevo listado
-        </h1>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-4 rounded-lg bg-green-100 border border-green-400 text-green-700 px-4 py-3">
-            ¡Listado creado exitosamente! Redirigiendo...
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Título *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Ingresa el título del listado"
-            />
+    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
+      <Header />
+      <div className="py-12 px-4 pb-16 md:pb-12">
+        <main className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
+              Crear nuevo listado
+            </h1>
           </div>
 
-          {/* Description */}
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Descripción *
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required
-              rows={4}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Describe tu listado"
-            />
-          </div>
+          {error && (
+            <div className="mb-4 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
+              {error}
+            </div>
+          )}
 
-          {/* Country */}
-          <div>
-            <label
-              htmlFor="country"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              País *
-            </label>
-            <select
-              id="country"
-              name="country"
-              value={formData.country_id}
-              onChange={handleInputChange}
-              required
-              disabled={loadingCountries}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
-            >
-              <option value="">Selecciona un país</option>
-              {countries.map((country) => (
-                <option key={country.country_id} value={country.country_id}>
-                  {country.country_name}
-                </option>
+          {success && (
+            <div className="mb-4 rounded-lg bg-green-100 border border-green-400 text-green-700 px-4 py-3">
+              ¡Listado creado exitosamente! Redirigiendo...
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Title */}
+            <div>
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Título *
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                placeholder="Ingresa el título del listado"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Descripción *
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+                rows={4}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                placeholder="Describe tu listado"
+              />
+            </div>
+
+            {/* Country */}
+            <div>
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                País *
+              </label>
+              <select
+                id="country"
+                name="country"
+                value={formData.country_id}
+                onChange={handleInputChange}
+                required
+                disabled={loadingCountries}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
+              >
+                <option value="">Selecciona un país</option>
+                {countries.map((country) => (
+                  <option key={country.country_id} value={country.country_id}>
+                    {country.country_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* City */}
+            <div>
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Ciudad *
+              </label>
+              <select
+                id="city"
+                name="city"
+                value={formData.city_id}
+                onChange={handleInputChange}
+                required
+                disabled={!formData.country_id || loadingCities}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
+              >
+                <option value="">Selecciona una ciudad</option>
+                {cities.map((city) => (
+                  <option key={city.city_id} value={city.city_id}>
+                    {city.city_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Neighborhood */}
+            <div>
+              <label
+                htmlFor="neighborhood"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Barrio *
+              </label>
+              <select
+                id="neighborhood"
+                name="neighborhood"
+                value={formData.neighborhood_id}
+                onChange={handleInputChange}
+                required
+                disabled={!formData.city_id || loadingNeighborhoods}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
+              >
+                <option value="">Selecciona un barrio</option>
+                {neighborhoods.map((neighborhood) => (
+                  <option key={neighborhood.neighborhood_id} value={neighborhood.neighborhood_id}>
+                    {neighborhood.neighborhood_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Address Line 1 */}
+            <div>
+              <label
+                htmlFor="address_line_1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Dirección línea 1 *
+              </label>
+              <input
+                type="text"
+                id="address_line_1"
+                name="address_line_1"
+                value={formData.address_line_1}
+                onChange={handleInputChange}
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                placeholder="Ingresa la dirección"
+              />
+            </div>
+
+            {/* Address Line 2 */}
+            <div>
+              <label
+                htmlFor="address_line_2"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Dirección línea 2 (opcional)
+              </label>
+              <input
+                type="text"
+                id="address_line_2"
+                name="address_line_2"
+                value={formData.address_line_2}
+                onChange={handleInputChange}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                placeholder="Apartamento, suite, etc. (opcional)"
+              />
+            </div>
+
+            {/* Coordinates */}
+            <div>
+              <label
+                htmlFor="coordinates"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Coordenadas (lat,lng) *
+              </label>
+              <input
+                type="text"
+                id="coordinates"
+                name="coordinates"
+                value={formData.coordinates}
+                onChange={handleInputChange}
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                placeholder="ej: 4.7110,-74.0721"
+              />
+            </div>
+
+            {/* Price */}
+            <div>
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Precio *
+              </label>
+              <input
+                type="text"
+                id="price"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                placeholder="Ingresa el precio"
+              />
+            </div>
+
+            {/* Subcategory */}
+            <div>
+              <label
+                htmlFor="subcategory_id"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Tipo de artículo * (Subcategoría)
+              </label>
+              <select
+                id="subcategory_id"
+                name="subcategory_id"
+                value={formData.subcategory_id}
+                onChange={handleInputChange}
+                required
+                disabled={loadingSubcategories}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
+              >
+                <option value="">Seleccione un tipo de artículo</option>
+                {subcategories.map((subcategory) => (
+                  <option key={subcategory.subcategory_id} value={subcategory.subcategory_id}>
+                    {subcategory.subcategory_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Photos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                URLs de fotos * (se requiere al menos una)
+              </label>
+              {formData.pictures.map((photo, index) => (
+                <div key={index} className="mb-2 flex gap-2">
+                  <input
+                    type="url"
+                    value={photo}
+                    onChange={(e) => handlePhotoChange(index, e.target.value)}
+                    required={index === 0}
+                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
+                    placeholder="https://ejemplo.com/foto.jpg"
+                  />
+                  {formData.pictures.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePhotoField(index)}
+                      className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
               ))}
-            </select>
-          </div>
+              <button
+                type="button"
+                onClick={addPhotoField}
+                className="mt-2 rounded-lg bg-zinc-500 px-4 py-2 text-white hover:bg-zinc-600 transition-colors"
+              >
+                Agregar otra foto
+              </button>
+            </div>
 
-          {/* City */}
-          <div>
-            <label
-              htmlFor="city"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Ciudad *
-            </label>
-            <select
-              id="city"
-              name="city"
-              value={formData.city_id}
-              onChange={handleInputChange}
-              required
-              disabled={!formData.country_id || loadingCities}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
-            >
-              <option value="">Selecciona una ciudad</option>
-              {cities.map((city) => (
-                <option key={city.city_id} value={city.city_id}>
-                  {city.city_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Neighborhood */}
-          <div>
-            <label
-              htmlFor="neighborhood"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Barrio *
-            </label>
-            <select
-              id="neighborhood"
-              name="neighborhood"
-              value={formData.neighborhood_id}
-              onChange={handleInputChange}
-              required
-              disabled={!formData.city_id || loadingNeighborhoods}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
-            >
-              <option value="">Selecciona un barrio</option>
-              {neighborhoods.map((neighborhood) => (
-                <option key={neighborhood.neighborhood_id} value={neighborhood.neighborhood_id}>
-                  {neighborhood.neighborhood_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Address Line 1 */}
-          <div>
-            <label
-              htmlFor="address_line_1"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Dirección línea 1 *
-            </label>
-            <input
-              type="text"
-              id="address_line_1"
-              name="address_line_1"
-              value={formData.address_line_1}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Ingresa la dirección"
-            />
-          </div>
-
-          {/* Address Line 2 */}
-          <div>
-            <label
-              htmlFor="address_line_2"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Dirección línea 2 (opcional)
-            </label>
-            <input
-              type="text"
-              id="address_line_2"
-              name="address_line_2"
-              value={formData.address_line_2}
-              onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Apartamento, suite, etc. (opcional)"
-            />
-          </div>
-
-          {/* Coordinates */}
-          <div>
-            <label
-              htmlFor="coordinates"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Coordenadas (lat,lng) *
-            </label>
-            <input
-              type="text"
-              id="coordinates"
-              name="coordinates"
-              value={formData.coordinates}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="ej: 4.7110,-74.0721"
-            />
-          </div>
-
-          {/* Price */}
-          <div>
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Precio *
-            </label>
-            <input
-              type="text"
-              id="price"
-              name="price"
-              value={formData.price}
-              onChange={handleInputChange}
-              required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Ingresa el precio"
-            />
-          </div>
-
-          {/* Subcategory */}
-          <div>
-            <label
-              htmlFor="subcategory_id"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Tipo de artículo * (Subcategoría)
-            </label>
-            <select
-              id="subcategory_id"
-              name="subcategory_id"
-              value={formData.subcategory_id}
-              onChange={handleInputChange}
-              required
-              disabled={loadingSubcategories}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
-            >
-              <option value="">Seleccione un tipo de artículo</option>
-              {subcategories.map((subcategory) => (
-                <option key={subcategory.subcategory_id} value={subcategory.subcategory_id}>
-                  {subcategory.subcategory_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Photos */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              URLs de fotos * (se requiere al menos una)
-            </label>
-            {formData.pictures.map((photo, index) => (
-              <div key={index} className="mb-2 flex gap-2">
-                <input
-                  type="url"
-                  value={photo}
-                  onChange={(e) => handlePhotoChange(index, e.target.value)}
-                  required={index === 0}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="https://ejemplo.com/foto.jpg"
-                />
-                {formData.pictures.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removePhotoField(index)}
-                    className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
-                  >
-                    Eliminar
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addPhotoField}
-              className="mt-2 rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-600 transition-colors"
-            >
-              Agregar otra foto
-            </button>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? "Creando..." : "Crear listado"}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/misListados")}
-              className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </main>
+            {/* Submit Button */}
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 disabled:bg-zinc-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? "Creando..." : "Crear listado"}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/misListados")}
+                className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-zinc-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </main>
+      </div>
     </div>
   );
 }
