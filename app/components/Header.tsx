@@ -231,8 +231,8 @@ export default function Header() {
 
       {/* Mobile Bottom Navigation */}
       {!loading && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-800 border-t border-gray-200 dark:border-gray-700 z-50">
-          <div className="flex justify-around items-center py-2">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700 z-50">
+          <div className="flex justify-around items-stretch py-2">
             <a
               href="#"
               onClick={(e) => {
@@ -243,22 +243,24 @@ export default function Header() {
                   setIsSignInOpen(true);
                 }
               }}
-              className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
+              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
             >
-              <svg
-                className="h-6 w-6 text-black dark:text-white mb-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Mensajes</span>
+              <div className="h-6 w-6 flex items-center justify-center mb-1">
+                <svg
+                  className="h-6 w-6 text-black dark:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 text-center leading-tight">Mensajes</span>
             </a>
             <a
               href="#"
@@ -266,22 +268,24 @@ export default function Header() {
                 e.preventDefault();
                 router.push("/");
               }}
-              className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
+              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
             >
-              <svg
-                className="h-6 w-6 text-black dark:text-white mb-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Buscar</span>
+              <div className="h-6 w-6 flex items-center justify-center mb-1">
+                <svg
+                  className="h-6 w-6 text-black dark:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 text-center leading-tight">Buscar</span>
             </a>
             <a
               href="#"
@@ -293,22 +297,24 @@ export default function Header() {
                   setIsSignInOpen(true);
                 }
               }}
-              className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
+              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
             >
-              <svg
-                className="h-6 w-6 text-black dark:text-white mb-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                />
-              </svg>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Mis listados</span>
+              <div className="h-6 w-6 flex items-center justify-center mb-1">
+                <svg
+                  className="h-6 w-6 text-black dark:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 text-center leading-tight">Mis listados</span>
             </a>
             <a
               href="#"
@@ -320,22 +326,24 @@ export default function Header() {
                   setIsSignInOpen(true);
                 }
               }}
-              className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
+              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
             >
-              <svg
-                className="h-6 w-6 text-black dark:text-white mb-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Crear Listado</span>
+              <div className="h-6 w-6 flex items-center justify-center mb-1">
+                <svg
+                  className="h-6 w-6 text-black dark:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 text-center leading-tight">Crear Listado</span>
             </a>
             {user ? (
               <a
@@ -344,22 +352,24 @@ export default function Header() {
                   e.preventDefault();
                   setIsProfileOpen(true);
                 }}
-                className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
+                className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
               >
-                <svg
-                  className="h-6 w-6 text-black dark:text-white mb-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Mi Perfil</span>
+                <div className="h-6 w-6 flex items-center justify-center mb-1">
+                  <svg
+                    className="h-6 w-6 text-black dark:text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 text-center leading-tight">Mi Perfil</span>
               </a>
             ) : (
               <a
@@ -368,22 +378,24 @@ export default function Header() {
                   e.preventDefault();
                   setIsSignInOpen(true);
                 }}
-                className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px]"
+                className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
               >
-                <svg
-                  className="h-6 w-6 text-black dark:text-white mb-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                  />
-                </svg>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Ingresar</span>
+                <div className="h-6 w-6 flex items-center justify-center mb-1">
+                  <svg
+                    className="h-6 w-6 text-black dark:text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </div>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 text-center leading-tight">Ingresar</span>
               </a>
             )}
           </div>

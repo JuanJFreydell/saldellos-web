@@ -89,23 +89,23 @@ export default function MisListadosPage() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Header />
-      <div className="py-12 px-4 pb-16 md:pb-12">
-        <main className="max-w-6xl mx-auto">
-        <div className="mb-8">
+      <div className="py-12 px-0 md:px-4 pb-16 md:pb-12">
+        <main className="max-w-6xl mx-auto w-full">
+        <div className="mb-8 px-4 md:px-0">
           <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
             Mis listados
           </h1>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
+          <div className="mb-4 mx-4 md:mx-0 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
             {error}
           </div>
         )}
 
         {listings.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <p className="text-lg text-gray-600 dark:text-gray-400">
+          <div className="text-center py-12 px-4 md:px-0">
+            <p className="text-lg text-zinc-600 dark:text-zinc-400">
               Aún no tienes listados.
             </p>
             <button
@@ -117,7 +117,7 @@ export default function MisListadosPage() {
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-0 md:space-y-4">
           {listings.map((listing) => (
             <ListingCard 
               key={listing.listing_id} 
