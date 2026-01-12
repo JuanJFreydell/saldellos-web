@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { authenticatedFetch } from "@/lib/api-client";
+import Header from "../components/Header";
 
 interface ListingMetadata {
   listing_id: string;
@@ -72,8 +73,11 @@ export default function MisListadosPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-lg">Cargando...</p>
+      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
+        <Header />
+        <div className="flex items-center justify-center h-[calc(100vh-80px)] pb-16 md:pb-0">
+          <p className="text-lg">Cargando...</p>
+        </div>
       </div>
     );
   }
@@ -83,18 +87,14 @@ export default function MisListadosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black py-12 px-4">
-      <main className="max-w-6xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
+      <Header />
+      <div className="py-12 px-4 pb-16 md:pb-12">
+        <main className="max-w-6xl mx-auto">
+        <div className="mb-8">
           <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
             Mis listados
           </h1>
-          <button
-            onClick={() => router.push("/loggedUserPage")}
-            className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
-          >
-            Volver al perfil
-          </button>
         </div>
 
         {error && (
@@ -127,7 +127,8 @@ export default function MisListadosPage() {
             />
           ))}
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

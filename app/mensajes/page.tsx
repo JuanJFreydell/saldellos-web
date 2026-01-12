@@ -269,7 +269,7 @@ export default function MensagesPage() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Header />
-      <div className="flex h-[calc(100vh-80px)] md:h-[calc(100vh-80px)] pb-16 md:pb-0">
+      <div className="flex h-[calc(100vh-80px)] pb-16 md:pb-0">
         {/* Conversations List Panel */}
         <div className={`${
           selectedConversation ? "hidden md:block" : "block"
