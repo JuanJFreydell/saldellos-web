@@ -143,10 +143,10 @@ function ListingCard({
   router: ReturnType<typeof useRouter>;
 }) {
   return (
-    <div className="rounded-lg bg-white shadow-md dark:bg-zinc-800 overflow-hidden border border-gray-200 dark:border-gray-700">
-      <div className="flex flex-row">
+    <div className="w-full bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 md:rounded-lg md:shadow-md md:border md:overflow-hidden">
+      <div className="flex flex-row p-4 md:p-0">
         {/* Thumbnail */}
-        <div className="w-48 h-48 shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
+        <div className="w-12 h-12 md:w-48 md:h-48 md:shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden rounded-lg md:rounded-none shrink-0">
           {listing.thumbnail ? (
             <img
               src={listing.thumbnail}
@@ -155,22 +155,22 @@ function ListingCard({
             />
           ) : (
             <div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-              <span className="text-gray-400">Sin imagen</span>
+              <span className="text-zinc-400 text-xs">Sin imagen</span>
             </div>
           )}
         </div>
 
         {/* Metadata */}
-        <div className="flex-1 p-6 flex flex-col justify-between">
+        <div className="flex-1 p-0 md:p-6 ml-3 md:ml-0 flex flex-col justify-between">
           <div>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-black dark:text-zinc-50 mb-2">
+            <div className="flex items-start justify-between mb-2 md:mb-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg md:text-2xl font-semibold text-black dark:text-zinc-50 mb-1 md:mb-2 truncate">
                   {listing.title}
                 </h2>
-                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-zinc-600 dark:text-zinc-400">
                   <span className="flex items-center gap-1">
-                    <span className="font-medium">Tipo de artículo:</span> {listing.category || "N/A"}
+                    <span className="font-medium">Tipo de artículo:</span> <span className="truncate">{listing.category || "N/A"}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="font-medium">Estado:</span>
@@ -178,7 +178,7 @@ function ListingCard({
                       className={`px-2 py-1 rounded-full text-xs ${
                         listing.status === "active"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-zinc-100 text-gray-800 dark:bg-zinc-700 dark:text-gray-200"
+                          : "bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
                       }`}
                     >
                       {listing.status === "active" ? "activo" : listing.status}
@@ -186,52 +186,63 @@ function ListingCard({
                   </span>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-right ml-2 md:ml-0 shrink-0">
+                <p className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
                   ${listing.price}
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            {/* Desktop: Show all fields */}
+            <div className="hidden md:grid md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
                   ID del listado:
                 </span>
-                <p className="text-gray-600 dark:text-gray-400 font-mono text-xs">
+                <p className="text-zinc-600 dark:text-zinc-400 font-mono text-xs">
                   {listing.listing_id}
                 </p>
               </div>
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
                   Coordenadas:
                 </span>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   {listing.coordinates}
                 </p>
               </div>
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
                   Fecha de listado:
                 </span>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   {new Date(listing.listing_date).toLocaleDateString()}
                 </p>
               </div>
             </div>
+            
+            {/* Mobile: Show only date */}
+            <div className="md:hidden text-sm mt-1">
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                Fecha de listado:
+              </span>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                {new Date(listing.listing_date).toLocaleDateString()}
+              </p>
+            </div>
           </div>
           
           {/* Action Buttons */}
-          <div className="mt-4 flex gap-2">
+          <div className="mt-3 md:mt-4 flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => router.push(`/editListing?listing_id=${listing.listing_id}`)}
-              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="flex-1 sm:flex-none rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               Editar listado
             </button>
             <button
               onClick={() => onDelete(listing.listing_id)}
-              className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
+              className="flex-1 sm:flex-none rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
             >
               Eliminar listado
             </button>
