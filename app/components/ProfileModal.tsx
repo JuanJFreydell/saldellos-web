@@ -69,6 +69,11 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const handleSignOut = async () => {
     await signOut();
     onClose();
+    
+    // Wait a moment for auth state to propagate
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    router.refresh(); // Force refresh of server components
     router.push("/");
   };
 
