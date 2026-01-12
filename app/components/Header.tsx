@@ -232,7 +232,7 @@ export default function Header() {
       {/* Mobile Bottom Navigation */}
       {!loading && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700 z-50">
-          <div className="flex justify-around items-stretch py-2">
+          <div className="flex justify-around items-stretch pt-2 pb-2">
             <a
               href="#"
               onClick={(e) => {
@@ -243,7 +243,7 @@ export default function Header() {
                   setIsSignInOpen(true);
                 }
               }}
-              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
+              className="flex flex-col items-center justify-start flex-1 px-2 min-w-0"
             >
               <div className="h-6 w-6 flex items-center justify-center mb-1">
                 <svg
@@ -268,7 +268,7 @@ export default function Header() {
                 e.preventDefault();
                 router.push("/");
               }}
-              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
+              className="flex flex-col items-center justify-start flex-1 px-2 min-w-0"
             >
               <div className="h-6 w-6 flex items-center justify-center mb-1">
                 <svg
@@ -297,7 +297,7 @@ export default function Header() {
                   setIsSignInOpen(true);
                 }
               }}
-              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
+              className="flex flex-col items-center justify-start flex-1 px-2 min-w-0"
             >
               <div className="h-6 w-6 flex items-center justify-center mb-1">
                 <svg
@@ -326,7 +326,7 @@ export default function Header() {
                   setIsSignInOpen(true);
                 }
               }}
-              className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
+              className="flex flex-col items-center justify-start flex-1 px-2 min-w-0"
             >
               <div className="h-6 w-6 flex items-center justify-center mb-1">
                 <svg
@@ -352,7 +352,7 @@ export default function Header() {
                   e.preventDefault();
                   setIsProfileOpen(true);
                 }}
-                className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
+                className="flex flex-col items-center justify-start flex-1 px-2 min-w-0"
               >
                 <div className="h-6 w-6 flex items-center justify-center mb-1">
                   <svg
@@ -378,7 +378,7 @@ export default function Header() {
                   e.preventDefault();
                   setIsSignInOpen(true);
                 }}
-                className="flex flex-col items-center justify-center flex-1 py-2 px-2 min-w-0"
+                className="flex flex-col items-center justify-start flex-1 px-2 min-w-0"
               >
                 <div className="h-6 w-6 flex items-center justify-center mb-1">
                   <svg
