@@ -238,13 +238,13 @@ function ListingCard({
               onClick={() => router.push(`/editListing?listing_id=${listing.listing_id}`)}
               className="flex-1 sm:flex-none rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
-              Editar listado
+              Editar
             </button>
             <button
               onClick={() => onDelete(listing.listing_id)}
               className="flex-1 sm:flex-none rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
             >
-              Eliminar listado
+              Eliminar
             </button>
           </div>
         </div>
