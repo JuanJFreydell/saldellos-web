@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import type { UserProfile } from "@/supabase/types/users";
 import SignUpModal from "./SignUpModal";
 import SignInModal from "./SignInModal";
 import ForgotPasswordModal from "./ForgotPasswordModal";
@@ -15,6 +17,48 @@ export default function Header() {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  async function fetchUserProfile() {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("auth_user_id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user profile:", error);
+      } else {
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }
+
+  const getInitials = () => {
+    const firstName = userProfile?.first_names || user?.user_metadata?.first_names || "";
+    const lastName = userProfile?.last_names || user?.user_metadata?.last_names || "";
+    const email = user?.email || "";
+    
+    if (firstName && lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    } else if (firstName) {
+      return firstName.charAt(0).toUpperCase();
+    } else if (email) {
+      return email.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
 
   // Note: Modals should only close:
   // 1. When user manually closes them (onClose callback)
@@ -74,44 +118,31 @@ export default function Header() {
             >
               Crear Listado
             </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (user) {
-                  setIsProfileOpen(true);
-                } else {
-                  setIsSignInOpen(true);
-                }
-              }}
-              className="text-sm font-medium text-black dark:text-white hover:border-b-2 hover:border-black dark:hover:border-white transition-colors pb-1"
-            >
-              Mi Perfil
-            </a>
             {user ? (
               <button
-                onClick={async () => {
-                  await signOut();
-                  router.push("/");
-                }}
-                className="flex items-center gap-2 rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
+                onClick={() => setIsProfileOpen(true)}
+                className="flex items-center gap-2 rounded-full bg-white border border-black px-3 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                Cerrar sesión
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center text-xs font-semibold text-white">
+                  {getInitials()}
+                </div>
+                <span>Mi Perfil</span>
               </button>
             ) : (
+              <>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsSignInOpen(true);
+                  }}
+                  className="text-sm font-medium text-black dark:text-white hover:border-b-2 hover:border-black dark:hover:border-white transition-colors pb-1"
+                >
+                  Mi Perfil
+                </a>
+              </>
+            )}
+            {!user && (
               <>
                 <button
                   onClick={() => setIsSignUpOpen(true)}
