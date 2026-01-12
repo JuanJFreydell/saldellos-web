@@ -296,7 +296,7 @@ export default function Home() {
                     setOpenDropdown("city");
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
               >
                 <span>{selectedCity || "Ciudad"}</span>
                 <svg
@@ -317,7 +317,7 @@ export default function Home() {
                 <>
                   <div className="fixed inset-0 z-[998]" onClick={() => { setOpenDropdown(null); setDropdownPosition(null); }}></div>
                   <div 
-                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
+                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
                     style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
                   >
                   {loadingCities ? (
@@ -341,7 +341,7 @@ export default function Home() {
                               setOpenDropdown(null);
                               setDropdownPosition(null);
                             }}
-                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                            className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors ${
                               isSelected
                                 ? "bg-black text-white dark:bg-white dark:text-black"
                                 : "text-gray-700 dark:text-gray-300"
@@ -376,8 +376,8 @@ export default function Home() {
                 disabled={!selectedCity}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-colors ${
                   !selectedCity
-                    ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    ? "bg-zinc-100 dark:bg-zinc-700 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-zinc-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-zinc-200 dark:hover:bg-zinc-600"
                 }`}
               >
                 <span>{selectedNeighborhood || "Barrio"}</span>
@@ -399,7 +399,7 @@ export default function Home() {
                 <>
                   <div className="fixed inset-0 z-[998]" onClick={() => { setOpenDropdown(null); setDropdownPosition(null); }}></div>
                   <div 
-                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
+                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
                     style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
                   >
                   {loadingNeighborhoods ? (
@@ -423,7 +423,7 @@ export default function Home() {
                               setOpenDropdown(null);
                               setDropdownPosition(null);
                             }}
-                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                            className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors ${
                               isSelected
                                 ? "bg-black text-white dark:bg-white dark:text-black"
                                 : "text-gray-700 dark:text-gray-300"
@@ -454,7 +454,7 @@ export default function Home() {
                     setOpenDropdown("subcategory");
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
               >
                 <span>{selectedSubcategory || "Subcategoría"}</span>
                 <svg
@@ -475,7 +475,7 @@ export default function Home() {
                 <>
                   <div className="fixed inset-0 z-[998]" onClick={() => { setOpenDropdown(null); setDropdownPosition(null); }}></div>
                   <div 
-                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
+                    className="fixed w-[280px] max-h-60 overflow-y-auto bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[999]"
                     style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
                   >
                   {loadingSubcategories ? (
@@ -499,7 +499,7 @@ export default function Home() {
                               setOpenDropdown(null);
                               setDropdownPosition(null);
                             }}
-                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                            className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors ${
                               isSelected
                                 ? "bg-black text-white dark:bg-white dark:text-black"
                                 : "text-gray-700 dark:text-gray-300"
@@ -519,7 +519,7 @@ export default function Home() {
         </div>
 
         {/* Desktop: Button Grid (Original Design) */}
-        <div className="hidden md:flex md:h-[200px] md:flex-row justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 mb-8 overflow-clip">
+        <div className="hidden md:flex md:h-[200px] md:flex-row justify-between bg-white dark:bg-black border border-transparent dark:border-zinc-600 rounded-lg shadow-md p-3 mb-8 overflow-clip">
           {/* City Section */}
           <div className="mb-6 w-1/4">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -544,8 +544,8 @@ export default function Home() {
                       onClick={() => handleCityToggle(city.city_name, city.city_id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         isSelected
-                          ? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-                          : "bg-white text-black border border-black hover:bg-gray-50 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-800"
+                          ? "bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                          : "bg-white text-black border border-black hover:bg-zinc-50 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-800"
                       }`}
                     >
                       <span>{city.city_name}</span>
@@ -604,9 +604,8 @@ export default function Home() {
                       }
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         isSelected
-                          ? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-                          : "bg-white text-black border border-black hover:bg-gray-50 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-800"
-                      }`}
+                          ? "bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                          : "bg-white text-black border border-black hover:bg-zinc-50 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-800"                      }`}
                     >
                       <span>{neighborhood.neighborhood_name}</span>
                       {isSelected && (
@@ -662,9 +661,9 @@ export default function Home() {
                       onClick={() => handleSubcategoryToggle(subcategory.subcategory_name)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         isSelected
-                          ? "bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-                          : "bg-white text-black border border-black hover:bg-gray-50 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-800"
-                      }`}
+                          ? "bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                          : "bg-white text-black border border-black hover:bg-zinc-50 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-800"
+                                              }`}
                     >
                       <span>{subcategory.subcategory_name}</span>
                       {isSelected && (
@@ -735,7 +734,7 @@ export default function Home() {
                     className={`rounded-lg px-6 py-2 font-medium transition-colors ${
                       hasMoreBatches
                         ? "bg-blue-500 text-white hover:bg-blue-600"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
+                        : "bg-zinc-300 text-gray-500 cursor-not-allowed dark:bg-zinc-700 dark:text-gray-500"
                     }`}
                   >
                     Cargar más
@@ -760,10 +759,10 @@ function ListingCard({ listing }: { listing: ListingMetadata }) {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+      className="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
     >
       {/* Thumbnail */}
-      <div className="w-full bg-gray-50 dark:bg-gray-700 aspect-[4/3] min-h-[192px] max-h-[320px] flex items-center justify-center overflow-hidden">
+      <div className="w-full bg-zinc-50 dark:bg-zinc-700 aspect-[4/3] min-h-[192px] max-h-[320px] flex items-center justify-center overflow-hidden">
         {listing.thumbnail ? (
           <img
             src={listing.thumbnail}

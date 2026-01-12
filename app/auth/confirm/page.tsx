@@ -115,7 +115,7 @@ function AuthConfirmContent() {
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Header />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800 text-center">
+        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-zinc-800 text-center">
           {status === "loading" && (
             <>
               <div className="mb-4">
@@ -166,7 +166,7 @@ function AuthConfirmContent() {
               <p className="text-lg text-red-700 dark:text-red-400 mb-4">{message}</p>
               <button
                 onClick={() => router.push("/")}
-                className="rounded-lg bg-black px-6 py-2 text-white hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                className="rounded-lg bg-black px-6 py-2 text-white hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
               >
                 Volver al inicio
               </button>
@@ -185,7 +185,7 @@ export default function AuthConfirmPage() {
         <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
           <Header />
           <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
-            <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800 text-center">
+            <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-zinc-800 text-center">
               <div className="mb-4">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-black border-r-transparent dark:border-white"></div>
               </div>

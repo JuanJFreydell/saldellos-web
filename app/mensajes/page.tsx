@@ -256,7 +256,7 @@ export default function MensagesPage() {
             <p className="text-lg text-red-600 dark:text-red-400 mb-4">{error}</p>
             <button
               onClick={() => fetchConversations()}
-              className="rounded-lg bg-black px-6 py-2 text-white hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              className="rounded-lg bg-black px-6 py-2 text-white hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               Reintentar
             </button>
@@ -273,7 +273,7 @@ export default function MensagesPage() {
         {/* Conversations List Panel */}
         <div className={`${
           selectedConversation ? "hidden md:block" : "block"
-        } w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto`}>
+        } w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-800 overflow-y-auto`}>
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-black dark:text-zinc-50">
               Conversaciones
@@ -294,15 +294,15 @@ export default function MensagesPage() {
                   <button
                     key={conversation.conversation_id}
                     onClick={() => setSelectedConversation(conversation)}
-                    className={`w-full p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                    className={`w-full p-4 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors ${
                       isSelected
-                        ? "bg-gray-100 dark:bg-gray-800 border-l-4 border-black dark:border-white"
+                        ? "bg-zinc-100 dark:bg-zinc-800 border-l-4 border-black dark:border-white"
                         : ""
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       {conversation.listing_metadata?.thumbnail ? (
-                        <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                         <img
                           src={conversation.listing_metadata.thumbnail}
                           alt={conversation.listing_metadata.title}
@@ -310,7 +310,7 @@ export default function MensagesPage() {
                         />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
                           <span className="text-gray-400 text-xs">Sin imagen</span>
                         </div>
                       )}
@@ -346,7 +346,7 @@ export default function MensagesPage() {
         {/* Conversation View Panel */}
         <div className={`${
           selectedConversation ? "flex" : "hidden md:flex"
-        } flex-1 flex-col bg-white dark:bg-gray-800`}>
+        } flex-1 flex-col bg-white dark:bg-zinc-800`}>
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
@@ -373,7 +373,7 @@ export default function MensagesPage() {
                 </button>
                 <div className="flex items-center gap-3">
                   {selectedConversation.listing_metadata?.thumbnail ? (
-                    <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
                     <img
                       src={selectedConversation.listing_metadata.thumbnail}
                       alt={selectedConversation.listing_metadata.title}
@@ -381,7 +381,7 @@ export default function MensagesPage() {
                     />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
                       <span className="text-gray-400 text-xs">Sin imagen</span>
                     </div>
                   )}
@@ -429,7 +429,7 @@ export default function MensagesPage() {
                           className={`max-w-[70%] rounded-lg p-3 ${
                             isCurrentUser
                               ? "bg-black text-white dark:bg-white dark:text-black"
-                              : "bg-gray-200 dark:bg-gray-700 text-black dark:text-zinc-50"
+                              : "bg-zinc-200 dark:bg-zinc-700 text-black dark:text-zinc-50"
                           }`}
                         >
                           {!isCurrentUser && (
@@ -462,12 +462,12 @@ export default function MensagesPage() {
                     onKeyPress={handleKeyPress}
                     placeholder="Escribe un mensaje..."
                     rows={2}
-                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-zinc-50 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-700 text-black dark:text-zinc-50 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!messageText.trim() || sending}
-                    className="rounded-lg bg-black px-6 py-2 text-white font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                    className="rounded-lg bg-black px-6 py-2 text-white font-medium hover:bg-zinc-800 transition-colors disabled:bg-zinc-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                   >
                     {sending ? "Enviando..." : "Enviar"}
                   </button>

@@ -90,7 +90,7 @@ export default function ForgotPasswordModal({
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full max-w-md rounded-lg bg-white p-8 shadow-xl dark:bg-gray-800 mx-4">
+      <div className="relative w-full max-w-md rounded-lg bg-white p-8 shadow-xl dark:bg-zinc-800 mx-4">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -148,7 +148,7 @@ export default function ForgotPasswordModal({
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
                 placeholder="tu@email.com"
               />
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -159,7 +159,7 @@ export default function ForgotPasswordModal({
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               {loading ? "Enviando..." : "Enviar enlace de restablecimiento"}
             </button>
@@ -169,7 +169,7 @@ export default function ForgotPasswordModal({
         {success && (
           <button
             onClick={onClose}
-            className="mt-4 w-full rounded-lg bg-white border border-black px-6 py-3 font-medium text-black hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+            className="mt-4 w-full rounded-lg bg-white border border-black px-6 py-3 font-medium text-black hover:bg-zinc-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
           >
             Cerrar
           </button>

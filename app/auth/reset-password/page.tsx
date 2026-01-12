@@ -124,7 +124,7 @@ function ResetPasswordContent() {
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Header />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
+        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-zinc-800">
           {status === "loading" && (
             <>
               <div className="mb-4">
@@ -162,7 +162,7 @@ function ResetPasswordContent() {
                     required
                     minLength={6}
                     disabled={loading}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
                     placeholder="Mínimo 6 caracteres"
                   />
                 </div>
@@ -182,7 +182,7 @@ function ResetPasswordContent() {
                     required
                     minLength={6}
                     disabled={loading}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
                     placeholder="Confirma tu contraseña"
                   />
                 </div>
@@ -190,7 +190,7 @@ function ResetPasswordContent() {
                 <button
                   type="submit"
                   disabled={loading || !password || !confirmPassword}
-                  className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                  className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
                   {loading ? "Restableciendo..." : "Restablecer contraseña"}
                 </button>
@@ -239,7 +239,7 @@ function ResetPasswordContent() {
               <p className="text-lg text-red-700 dark:text-red-400 mb-4 text-center">{message}</p>
               <button
                 onClick={() => router.push("/")}
-                className="w-full rounded-lg bg-black px-6 py-2 text-white hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                className="w-full rounded-lg bg-black px-6 py-2 text-white hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
               >
                 Volver al inicio
               </button>
@@ -258,7 +258,7 @@ export default function ResetPasswordPage() {
         <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
           <Header />
           <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
-            <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800 text-center">
+            <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-zinc-800 text-center">
               <div className="mb-4">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-black border-r-transparent dark:border-white"></div>
               </div>

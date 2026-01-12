@@ -91,7 +91,7 @@ export default function MisListadosPage() {
           </h1>
           <button
             onClick={() => router.push("/loggedUserPage")}
-            className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+            className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
           >
             Volver al perfil
           </button>
@@ -110,7 +110,7 @@ export default function MisListadosPage() {
             </p>
             <button
               onClick={() => router.push("/listar")}
-              className="mt-4 rounded-full bg-black px-6 py-2 text-white font-medium hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              className="mt-4 rounded-full bg-black px-6 py-2 text-white font-medium hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               Crea tu primer listado
             </button>
@@ -142,10 +142,10 @@ function ListingCard({
   router: ReturnType<typeof useRouter>;
 }) {
   return (
-    <div className="rounded-lg bg-white shadow-md dark:bg-gray-800 overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div className="rounded-lg bg-white shadow-md dark:bg-zinc-800 overflow-hidden border border-gray-200 dark:border-gray-700">
       <div className="flex flex-row">
         {/* Thumbnail */}
-        <div className="w-48 h-48 shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+        <div className="w-48 h-48 shrink-0 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
           {listing.thumbnail ? (
             <img
               src={listing.thumbnail}
@@ -153,7 +153,7 @@ function ListingCard({
               className="max-w-full max-h-full object-contain"
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <div className="w-full h-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
               <span className="text-gray-400">Sin imagen</span>
             </div>
           )}
@@ -177,7 +177,7 @@ function ListingCard({
                       className={`px-2 py-1 rounded-full text-xs ${
                         listing.status === "active"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                          : "bg-zinc-100 text-gray-800 dark:bg-zinc-700 dark:text-gray-200"
                       }`}
                     >
                       {listing.status === "active" ? "activo" : listing.status}
@@ -224,13 +224,13 @@ function ListingCard({
           <div className="mt-4 flex gap-2">
             <button
               onClick={() => router.push(`/editListing?listing_id=${listing.listing_id}`)}
-              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               Editar listado
             </button>
             <button
               onClick={() => onDelete(listing.listing_id)}
-              className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+              className="rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
             >
               Eliminar listado
             </button>

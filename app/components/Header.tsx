@@ -22,7 +22,7 @@ export default function Header() {
   // We do NOT auto-close on errors - modals stay open so user can retry
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <header className="shadow-sm border-b border-gray-200 dark:border-zinc-700">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <h1 
           className="text-2xl font-semibold text-black dark:text-zinc-50 cursor-pointer"
@@ -94,7 +94,7 @@ export default function Header() {
                   await signOut();
                   router.push("/");
                 }}
-                className="flex items-center gap-2 rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+                className="flex items-center gap-2 rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
               >
                 <svg
                   className="h-5 w-5"
@@ -115,7 +115,7 @@ export default function Header() {
               <>
                 <button
                   onClick={() => setIsSignUpOpen(true)}
-                  className="hidden lg:flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                  className="hidden lg:flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
                   <svg
                     className="h-5 w-5"
@@ -134,7 +134,7 @@ export default function Header() {
                 </button>
                 <button
                   onClick={() => setIsSignInOpen(true)}
-                  className="flex items-center gap-2 rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+                  className="flex items-center gap-2 rounded-full bg-white border border-black px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-50 dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
                 >
                   <svg
                     className="h-5 w-5"
@@ -190,7 +190,7 @@ export default function Header() {
 
       {/* Mobile Bottom Navigation */}
       {!loading && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-800 border-t border-gray-200 dark:border-gray-700 z-50">
           <div className="flex justify-around items-center py-2">
             <a
               href="#"

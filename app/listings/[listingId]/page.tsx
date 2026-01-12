@@ -180,9 +180,9 @@ export default function ListingDetailPage() {
           {/* Left Column - Images */}
           <div className="space-y-4">
             {/* Main thumbnail or first photo */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden">
               {listing.thumbnail || (listing.pictureURLs && listing.pictureURLs.length > 0) ? (
-                <div className="w-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+                <div className="w-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 p-4">
                   <div className="w-full max-w-[800px] max-h-[600px] flex items-center justify-center">
                     <img
                       src={listing.thumbnail || listing.pictureURLs[0]}
@@ -192,7 +192,7 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="w-full h-96 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <div className="w-full h-96 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
                   <span className="text-gray-400">Sin imagen</span>
                 </div>
               )}
@@ -204,9 +204,9 @@ export default function ListingDetailPage() {
                 {listing.pictureURLs.slice(1).map((photoUrl, index) => (
                   <div
                     key={index}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                    className="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                   >
-                    <div className="w-full h-32 flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-2">
+                    <div className="w-full h-32 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 p-2">
                       <div className="w-full max-w-full max-h-full flex items-center justify-center">
                         <img
                           src={photoUrl}
@@ -224,7 +224,7 @@ export default function ListingDetailPage() {
           {/* Right Column - Details */}
           <div className="space-y-6">
             {/* Title and Price */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6">
               <h1 className="text-3xl font-bold text-black dark:text-zinc-50 mb-4">
                 {listing.title}
               </h1>
@@ -244,7 +244,7 @@ export default function ListingDetailPage() {
                   {!showMessageForm ? (
                     <button
                       onClick={() => setShowMessageForm(true)}
-                      className="w-full rounded-lg bg-black px-6 py-3 text-white font-medium hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                      className="w-full rounded-lg bg-black px-6 py-3 text-white font-medium hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                     >
                       Contactar al vendedor
                     </button>
@@ -256,13 +256,13 @@ export default function ListingDetailPage() {
                         onKeyPress={handleKeyPress}
                         placeholder="Escribe tu mensaje al vendedor..."
                         rows={4}
-                        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-zinc-50 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-700 text-black dark:text-zinc-50 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={sendMessage}
                           disabled={!messageText.trim() || sending}
-                          className="flex-1 rounded-lg bg-black px-6 py-2 text-white font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                          className="flex-1 rounded-lg bg-black px-6 py-2 text-white font-medium hover:bg-zinc-800 transition-colors disabled:bg-zinc-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                         >
                           {sending ? "Enviando..." : "Enviar"}
                         </button>
@@ -272,7 +272,7 @@ export default function ListingDetailPage() {
                             setMessageText("");
                             setError(null);
                           }}
-                          className="rounded-lg bg-white border border-black px-4 py-2 text-black font-medium hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+                          className="rounded-lg bg-white border border-black px-4 py-2 text-black font-medium hover:bg-zinc-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
                         >
                           Cancelar
                         </button>
@@ -286,7 +286,7 @@ export default function ListingDetailPage() {
               ) : (
                 <button
                   onClick={() => router.push("/")}
-                  className="w-full rounded-lg bg-black px-6 py-3 text-white font-medium hover:bg-gray-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                  className="w-full rounded-lg bg-black px-6 py-3 text-white font-medium hover:bg-zinc-800 transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
                   Inicia sesión para contactar al vendedor
                 </button>
@@ -301,7 +301,7 @@ export default function ListingDetailPage() {
             </div>
 
             {/* Category and Subcategory */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6">
               <div className="grid grid-cols-2 gap-4">
                 {listing.category && (
                   <div>
@@ -327,7 +327,7 @@ export default function ListingDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-black dark:text-zinc-50 mb-4">
                 Descripción
               </h2>
@@ -337,7 +337,7 @@ export default function ListingDetailPage() {
             </div>
 
             {/* Location Information */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-black dark:text-zinc-50 mb-4">
                 Ubicación
               </h2>
@@ -387,7 +387,7 @@ export default function ListingDetailPage() {
 
             {/* Photos count */}
             {listing.pictureURLs && listing.pictureURLs.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold text-black dark:text-zinc-50 mb-2">
                   Fotos
                 </h2>

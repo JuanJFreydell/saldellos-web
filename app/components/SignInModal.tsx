@@ -115,7 +115,7 @@ export default function SignInModal({
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full max-w-md rounded-lg bg-white p-8 shadow-xl dark:bg-gray-800 mx-4">
+      <div className="relative w-full max-w-md rounded-lg bg-white p-8 shadow-xl dark:bg-zinc-800 mx-4">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -163,7 +163,7 @@ export default function SignInModal({
                 setFormData({ ...formData, email: e.target.value })
               }
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="tu@email.com"
             />
           </div>
@@ -184,7 +184,7 @@ export default function SignInModal({
                 setFormData({ ...formData, password: e.target.value })
               }
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="Tu contraseña"
             />
             <div className="mt-2 text-right">
@@ -201,7 +201,7 @@ export default function SignInModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+            className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
@@ -213,7 +213,7 @@ export default function SignInModal({
               <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">
+              <span className="px-2 bg-white dark:bg-zinc-800 text-gray-500">
                 O continúa con
               </span>
             </div>
@@ -221,7 +221,7 @@ export default function SignInModal({
 
           <button
             onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-white border border-gray-300 px-6 py-3 font-medium text-gray-700 shadow-md transition-colors hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600"
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-white border border-gray-300 px-6 py-3 font-medium text-gray-700 shadow-md transition-colors hover:bg-zinc-50 dark:bg-zinc-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-zinc-600"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path

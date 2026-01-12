@@ -397,7 +397,7 @@ function EditListingContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12 px-4">
-      <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
+      <main className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-zinc-800">
         <h1 className="mb-6 text-3xl font-semibold text-black dark:text-zinc-50">
           Editar listado
         </h1>
@@ -429,7 +429,7 @@ function EditListingContent() {
               name="title"
               value={formData.title}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="Ingresa el título del listado"
             />
           </div>
@@ -448,7 +448,7 @@ function EditListingContent() {
               value={formData.description}
               onChange={handleInputChange}
               rows={4}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="Describe tu listado"
             />
           </div>
@@ -466,7 +466,7 @@ function EditListingContent() {
               name="country"
               value={formData.country_id}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
             >
               <option value="">Selecciona un país</option>
               {countries.map((country) => (
@@ -492,7 +492,7 @@ function EditListingContent() {
               onChange={handleInputChange}
               required
               disabled={!formData.country_id || loadingCities}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
             >
               <option value="">Selecciona una ciudad</option>
               {cities.map((city) => (
@@ -518,7 +518,7 @@ function EditListingContent() {
               onChange={handleInputChange}
               required
               disabled={!formData.city_id || loadingNeighborhoods}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
             >
               <option value="">Selecciona un barrio</option>
               {neighborhoods.map((neighborhood) => (
@@ -543,7 +543,7 @@ function EditListingContent() {
               name="address_line_1"
               value={formData.address_line_1}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="Ingresa la dirección"
             />
           </div>
@@ -562,7 +562,7 @@ function EditListingContent() {
               name="address_line_2"
               value={formData.address_line_2}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="Apartamento, suite, etc. (opcional)"
             />
           </div>
@@ -581,7 +581,7 @@ function EditListingContent() {
               name="coordinates"
               value={formData.coordinates}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="ej: 4.7110,-74.0721"
             />
           </div>
@@ -600,7 +600,7 @@ function EditListingContent() {
               name="price"
               value={formData.price}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
               placeholder="Ingresa el precio"
             />
           </div>
@@ -619,7 +619,7 @@ function EditListingContent() {
               value={formData.subcategory_id}
               onChange={handleInputChange}
               disabled={loadingSubcategories}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white disabled:bg-zinc-100"
             >
               <option value="">Seleccione un tipo de artículo</option>
               {subcategories.map((subcategory) => (
@@ -641,14 +641,14 @@ function EditListingContent() {
                   type="url"
                   value={photo}
                   onChange={(e) => handlePhotoChange(index, e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
                   placeholder="https://ejemplo.com/foto.jpg"
                 />
                 {formData.pictures.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removePhotoField(index)}
-                    className="rounded-lg bg-white border border-black px-4 py-2 text-black hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+                    className="rounded-lg bg-white border border-black px-4 py-2 text-black hover:bg-zinc-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
                   >
                     Eliminar
                   </button>
@@ -658,7 +658,7 @@ function EditListingContent() {
             <button
               type="button"
               onClick={addPhotoField}
-              className="mt-2 rounded-lg bg-white border border-black px-4 py-2 text-black hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+              className="mt-2 rounded-lg bg-white border border-black px-4 py-2 text-black hover:bg-zinc-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
             >
               Agregar otra foto
             </button>
@@ -669,14 +669,14 @@ function EditListingContent() {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              className="flex-1 rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               {saving ? "Guardando..." : "Guardar cambios"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/misListados")}
-              className="rounded-lg bg-white border border-black px-6 py-3 font-medium text-black hover:bg-gray-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-gray-800"
+              className="rounded-lg bg-white border border-black px-6 py-3 font-medium text-black hover:bg-zinc-50 transition-colors dark:bg-black dark:border-white dark:text-white dark:hover:bg-zinc-800"
             >
               Cancelar
             </button>

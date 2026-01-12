@@ -120,7 +120,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       onClick={handleBackdropClick}
     >
       <div
-        className="relative w-full h-full md:w-full md:max-w-sm md:h-auto md:rounded-lg bg-white shadow-2xl dark:bg-gray-800 overflow-hidden md:mt-16 md:mr-4"
+        className="relative w-full h-full md:w-full md:max-w-sm md:h-auto md:rounded-lg bg-white shadow-2xl dark:bg-zinc-800 overflow-hidden md:mt-16 md:mr-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button - Desktop only */}
@@ -181,7 +181,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center text-xl font-semibold text-white">
                   {getInitials()}
                 </div>
-                <button className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-white dark:bg-gray-800 border-2 border-white dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                <button className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-white dark:bg-zinc-800 border-2 border-white dark:border-gray-800 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors shadow-sm">
                   <svg
                     className="h-3 w-3 text-gray-600 dark:text-gray-400"
                     fill="none"
@@ -213,7 +213,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             {/* Manage Account Button */}
             <button
               onClick={onClose}
-              className="w-full rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2.5 text-sm font-medium text-black dark:text-zinc-50 transition-colors"
+              className="w-full rounded-lg bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 px-4 py-2.5 text-sm font-medium text-black dark:text-zinc-50 transition-colors"
             >
               Gestionar tu cuenta de Saldellos
             </button>
@@ -223,7 +223,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 text-sm font-medium text-black dark:text-zinc-50 transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-700 px-4 py-3 text-sm font-medium text-black dark:text-zinc-50 transition-colors"
             >
               <svg
                 className="h-5 w-5"
