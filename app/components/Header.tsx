@@ -22,6 +22,9 @@ export default function Header() {
   useEffect(() => {
     if (user) {
       fetchUserProfile();
+    } else {
+      // Clear user profile when user logs out
+      setUserProfile(null);
     }
   }, [user]);
 

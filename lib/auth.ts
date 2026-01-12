@@ -33,7 +33,14 @@ export function useAuth() {
     user,
     session,
     loading,
-    signOut: () => supabase.auth.signOut(),
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        throw error;
+      }
+      // The onAuthStateChange listener will update the state automatically
+    },
   };
 }
 
