@@ -36,6 +36,69 @@ interface Subcategory {
 const COLOMBIA_NAME = "Colombia";
 const DEFAULT_CATEGORY = "para la venta";
 
+// Typewriter messages for second-hand goods
+const TYPEWRITER_MESSAGES = [
+  "¡Nuevos en tu casa!",
+  "Sobrados de rico",
+  "De segunda, primera calidad",
+  "Usados pero con amor",
+  "Casi nuevos, mejor precio",
+  "De colección a tu alcance",
+  "Segunda vida, primera opción",
+];
+
+function TypewriterTitle() {
+  const [displayText, setDisplayText] = useState("");
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentMessage = TYPEWRITER_MESSAGES[messageIndex];
+    const typingSpeed = isDeleting ? 50 : 100; // Faster when deleting
+    const pauseBeforeDelete = 2000; // Pause before starting to delete
+    const pauseBeforeNext = 500; // Pause before starting next message
+
+    if (!isDeleting && charIndex < currentMessage.length) {
+      // Typing forward
+      const timeout = setTimeout(() => {
+        setDisplayText(currentMessage.substring(0, charIndex + 1));
+        setCharIndex(charIndex + 1);
+      }, typingSpeed);
+      return () => clearTimeout(timeout);
+    } else if (!isDeleting && charIndex === currentMessage.length) {
+      // Finished typing, wait then start deleting
+      const timeout = setTimeout(() => {
+        setIsDeleting(true);
+      }, pauseBeforeDelete);
+      return () => clearTimeout(timeout);
+    } else if (isDeleting && charIndex > 0) {
+      // Deleting
+      const timeout = setTimeout(() => {
+        setDisplayText(currentMessage.substring(0, charIndex - 1));
+        setCharIndex(charIndex - 1);
+      }, typingSpeed);
+      return () => clearTimeout(timeout);
+    } else if (isDeleting && charIndex === 0) {
+      // Finished deleting, move to next message
+      const timeout = setTimeout(() => {
+        setIsDeleting(false);
+        setMessageIndex((messageIndex + 1) % TYPEWRITER_MESSAGES.length);
+      }, pauseBeforeNext);
+      return () => clearTimeout(timeout);
+    }
+  }, [charIndex, isDeleting, messageIndex]);
+
+  return (
+    <div className="text-3xl md:text-6xl font-serif flex justify-center items-center py-10 min-h-[120px] md:min-h-[150px] px-4">
+      <span className="text-black dark:text-zinc-50 text-center break-words">
+        {displayText}
+        <span className="animate-pulse">|</span>
+      </span>
+    </div>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
   const [listings, setListings] = useState<ListingMetadata[]>([]);
@@ -290,10 +353,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <Header />
-
+      <TypewriterTitle />
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Search Filters - Mobile: Dropdowns, Desktop: Button Grid */}
         {/* Mobile: Horizontal Dropdowns */}
+        
         <div className="md:hidden mb-6 relative">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {/* City Dropdown */}
@@ -718,6 +782,10 @@ export default function Home() {
             </p>
           </div>
         )}
+
+        <div className="text-lg md:text-3xl font-bold dark:text-gray-400 pt-4"> Lista tus muebles usados hoy </div>
+        <div className="text-xs md:text-lg font-bold text-gray-500 dark:text-gray-400 pb-2"> Mostrando los listados más recientes </div>
+
 
         {/* Listings Grid */}
         {!loading && (
