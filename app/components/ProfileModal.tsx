@@ -219,13 +219,6 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               </div>
             </div>
 
-            {/* Manage Account Button */}
-            <button
-              onClick={onClose}
-              className="w-full rounded-lg bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 px-4 py-2.5 text-sm font-medium text-black dark:text-zinc-50 transition-colors"
-            >
-              Gestionar tu cuenta de Saldellos
-            </button>
           </div>
 
           {/* Account Actions */}

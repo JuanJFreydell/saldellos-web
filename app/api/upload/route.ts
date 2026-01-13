@@ -86,9 +86,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Construct the public URL
-      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketName}/${filePath}`;
-      uploadedUrls.push(publicUrl);
+      // Get public URL using Supabase client method (handles URL construction correctly)
+      const { data: publicUrlData } = supabaseAdmin.storage
+        .from(bucketName)
+        .getPublicUrl(filePath);
+
+      uploadedUrls.push(publicUrlData.publicUrl);
     }
 
     return NextResponse.json({
