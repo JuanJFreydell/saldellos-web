@@ -39,10 +39,10 @@ const DEFAULT_CATEGORY = "para la venta";
 // Typewriter messages for second-hand goods
 const TYPEWRITER_MESSAGES = [
   "¡Nuevos en tu casa!",
-  "Sobrados de rico",
-  "De segunda, primera calidad",
   "Usados pero con amor",
   "Casi nuevos, mejor precio",
+  "De segunda, primera calidad",
+  "Sobrados de rico",
   "De colección a tu alcance",
   "Segunda vida, primera opción",
 ];
