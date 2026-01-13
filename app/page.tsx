@@ -145,9 +145,11 @@ export default function Home() {
     }
   }, [selectedCityId]);
 
-  async function fetchListings(batch: number = 1) {
+  async function fetchListings(batch: number = 1, showLoading: boolean = true) {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setError(null);
 
       const requestBody: any = {
@@ -178,14 +180,21 @@ export default function Home() {
 
       const data = await response.json();
       const fetchedListings = data.listings || [];
-      setListings(fetchedListings);
+      
+      // Only update if we got results, or if it's the first batch
+      if (fetchedListings.length > 0 || batch === 1) {
+        setListings(fetchedListings);
+      }
+      
       setTotal(data.total || 0);
       setCurrentBatch(data.batch || 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error");
       console.error("Error fetching listings:", err);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   }
 
@@ -225,20 +234,25 @@ export default function Home() {
 
   // Initial load - fetch listings for Colombia
   useEffect(() => {
-    if (colombiaId) {
+    if (colombiaId && initialLoad) {
       fetchListings(1).then(() => {
         setInitialLoad(false);
       });
     }
-  }, [colombiaId]);
+  }, [colombiaId, initialLoad]);
 
   // Auto-search when city or neighborhood filters change (but not on initial load)
   useEffect(() => {
     if (initialLoad || !colombiaId) return; // Don't trigger search during initial load
 
-    setCurrentBatch(1); // Reset to first batch
-    fetchListings(1);
-  }, [selectedCity, selectedNeighborhood, initialLoad, colombiaId]);
+    // Use a small delay to debounce rapid filter changes
+    const timeoutId = setTimeout(() => {
+      setCurrentBatch(1); // Reset to first batch
+      fetchListings(1);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedCity, selectedNeighborhood]); // Removed initialLoad and colombiaId from dependencies
 
   // Close dropdowns when clicking outside
   useEffect(() => {
