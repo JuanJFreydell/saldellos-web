@@ -774,6 +774,10 @@ export default function Home() {
           </div>
         )}
 
+        <div className="text-lg md:text-3xl font-bold dark:text-gray-400 pt-2"> Lista tus muebles usados hoy </div>
+        <div className="text-xs md:text-lg font-bold text-gray-500 dark:text-gray-400 pb-5"> Mostrando los listados más recientes </div>
+
+
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
@@ -782,10 +786,6 @@ export default function Home() {
             </p>
           </div>
         )}
-
-        <div className="text-lg md:text-3xl font-bold dark:text-gray-400 pt-4"> Lista tus muebles usados hoy </div>
-        <div className="text-xs md:text-lg font-bold text-gray-500 dark:text-gray-400 pb-2"> Mostrando los listados más recientes </div>
-
 
         {/* Listings Grid */}
         {!loading && (
