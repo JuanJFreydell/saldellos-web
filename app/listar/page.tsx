@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { authenticatedFetch } from "@/lib/api-client";
-import { supabase } from "@/lib/supabase";
 import Header from "../components/Header";
 
 interface Country {
@@ -300,51 +299,27 @@ export default function ListarPage() {
     const ownerId = user.id;
 
     try {
-      // Step 1: Get file paths from backend (validates user)
+      // Step 1: Upload files through backend (bypasses RLS, validates user)
+      const uploadFormData = new FormData();
+      selectedFiles.forEach((file) => {
+        uploadFormData.append('files', file);
+      });
+
       const uploadResponse = await authenticatedFetch("/api/upload", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fileCount: selectedFiles.length
-        }),
+        body: uploadFormData,
+        // Don't set Content-Type header - browser will set it with boundary for FormData
       });
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.json();
-        throw new Error(errorData.error || "Error al obtener autorización de carga");
+        throw new Error(errorData.error || "Error al subir las imágenes");
       }
 
-      const { filePaths, bucketName } = await uploadResponse.json();
+      const { uploadedUrls } = await uploadResponse.json();
 
-      // Step 2: Upload files directly to Supabase Storage using authenticated client
-      const uploadedUrls: string[] = [];
-      
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        const { path, publicUrl } = filePaths[i];
-
-        // Determine file extension
-        const fileExt = file.name.split('.').pop() || 'jpg';
-        const fullPath = `${path}.${fileExt}`;
-
-        // Upload file to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from(bucketName)
-          .upload(fullPath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (uploadError) {
-          console.error("Error uploading file:", uploadError);
-          throw new Error(`Error al subir ${file.name}: ${uploadError.message}`);
-        }
-
-        // Construct the public URL
-        const finalPublicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketName}/${fullPath}`;
-        uploadedUrls.push(finalPublicUrl);
+      if (!uploadedUrls || uploadedUrls.length === 0) {
+        throw new Error("No se pudieron subir las imágenes");
       }
 
       // Step 3: Create listing with uploaded image URLs
