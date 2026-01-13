@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, FormEvent, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { authenticatedFetch } from "@/lib/api-client";
+import { supabase } from "@/lib/supabase";
 import Header from "../components/Header";
 
 interface Country {
@@ -59,8 +60,11 @@ export default function ListarPage() {
     neighborhood: "",
     neighborhood_id: "",
     subcategory_id: "",
-    pictures: [""], // Start with one photo field
   });
+
+  // File selection states
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -217,21 +221,47 @@ export default function ListarPage() {
     }
   };
 
-  const handlePhotoChange = (index: number, value: string) => {
-    const newPhotos = [...formData.pictures];
-    newPhotos[index] = value;
-    setFormData((prev) => ({ ...prev, pictures: newPhotos }));
-  };
-
-  const addPhotoField = () => {
-    setFormData((prev) => ({ ...prev, pictures: [...prev.pictures, ""] }));
-  };
-
-  const removePhotoField = (index: number) => {
-    if (formData.pictures.length > 1) {
-      const newPhotos = formData.pictures.filter((_, i) => i !== index);
-      setFormData((prev) => ({ ...prev, pictures: newPhotos }));
+  // File input handler
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Validate file count
+    if (files.length > 10) {
+      setError("Máximo 10 imágenes permitidas");
+      return;
     }
+
+    // Validate file types and sizes
+    const validFiles: File[] = [];
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        setError(`${file.name} no es una imagen válida`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError(`${file.name} es demasiado grande (máximo 5MB)`);
+        return;
+      }
+      validFiles.push(file);
+    });
+
+    setSelectedFiles(validFiles);
+    setError(null); // Clear any previous errors
+
+    // Create previews
+    const previews = validFiles.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
+  };
+
+  // Remove file handler
+  const removeFile = (index: number) => {
+    // Revoke the preview URL to free memory
+    URL.revokeObjectURL(imagePreviews[index]);
+    
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setImagePreviews(newPreviews);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -240,10 +270,8 @@ export default function ListarPage() {
     setError(null);
     setSuccess(false);
 
-    // Filter out empty photo URLs
-    const validPhotos = formData.pictures.filter((photo) => photo.trim() !== "");
-
-    if (validPhotos.length === 0) {
+    // Validate files
+    if (selectedFiles.length === 0) {
       setError("Se requiere al menos una foto");
       setLoading(false);
       return;
@@ -272,7 +300,54 @@ export default function ListarPage() {
     const ownerId = user.id;
 
     try {
-      // Prepare request body matching API expectations
+      // Step 1: Get file paths from backend (validates user)
+      const uploadResponse = await authenticatedFetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileCount: selectedFiles.length
+        }),
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || "Error al obtener autorización de carga");
+      }
+
+      const { filePaths, bucketName } = await uploadResponse.json();
+
+      // Step 2: Upload files directly to Supabase Storage using authenticated client
+      const uploadedUrls: string[] = [];
+      
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const { path, publicUrl } = filePaths[i];
+
+        // Determine file extension
+        const fileExt = file.name.split('.').pop() || 'jpg';
+        const fullPath = `${path}.${fileExt}`;
+
+        // Upload file to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(bucketName)
+          .upload(fullPath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error("Error uploading file:", uploadError);
+          throw new Error(`Error al subir ${file.name}: ${uploadError.message}`);
+        }
+
+        // Construct the public URL
+        const finalPublicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketName}/${fullPath}`;
+        uploadedUrls.push(finalPublicUrl);
+      }
+
+      // Step 3: Create listing with uploaded image URLs
       const requestBody: any = {
         owner_id: ownerId,
         title: formData.title,
@@ -281,19 +356,17 @@ export default function ListarPage() {
         coordinates: formData.coordinates,
         price: formData.price,
         subcategory_id: formData.subcategory_id,
-        thumbnail: validPhotos[0], // First photo is thumbnail
-        pictures: validPhotos,
+        thumbnail: uploadedUrls[0], // First photo is thumbnail
+        pictures: uploadedUrls,
         country: formData.country,
+        city: formData.city,
+        neighborhood: formData.neighborhood,
       };
 
       // Add optional fields
       if (formData.address_line_2.trim()) {
         requestBody.address_line_2 = formData.address_line_2;
       }
-      
-      // City and neighborhood are now required
-      requestBody.city = formData.city;
-      requestBody.neighborhood = formData.neighborhood;
 
       const response = await authenticatedFetch("/api/manageListings", {
         method: "POST",
@@ -310,7 +383,13 @@ export default function ListarPage() {
       }
 
       setSuccess(true);
+      
+      // Clean up preview URLs
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      
       // Reset form
+      setSelectedFiles([]);
+      setImagePreviews([]);
       setFormData({
         title: "",
         description: "",
@@ -325,7 +404,6 @@ export default function ListarPage() {
         neighborhood: "",
         neighborhood_id: "",
         subcategory_id: "",
-        pictures: [""],
       });
 
       // Redirect after success
@@ -588,37 +666,46 @@ export default function ListarPage() {
 
             {/* Photos */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                URLs de fotos * (se requiere al menos una)
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Fotos * (se requiere al menos una, máximo 10)
               </label>
-              {formData.pictures.map((photo, index) => (
-                <div key={index} className="mb-2 flex gap-2">
-                  <input
-                    type="url"
-                    value={photo}
-                    onChange={(e) => handlePhotoChange(index, e.target.value)}
-                    required={index === 0}
-                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
-                    placeholder="https://ejemplo.com/foto.jpg"
-                  />
-                  {formData.pictures.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removePhotoField(index)}
-                      className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
-                    >
-                      Eliminar
-                    </button>
-                  )}
+              
+              {/* File input */}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                className="w-full rounded-lg border border-zinc-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+              />
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                Formatos aceptados: JPG, PNG, WebP. Tamaño máximo: 5MB por imagen.
+              </p>
+
+              {/* Image previews */}
+              {imagePreviews.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg border border-zinc-200 dark:border-zinc-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        aria-label="Eliminar imagen"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={addPhotoField}
-                className="mt-2 rounded-lg bg-zinc-500 px-4 py-2 text-white hover:bg-zinc-600 transition-colors"
-              >
-                Agregar otra foto
-              </button>
+              )}
             </div>
 
             {/* Submit Button */}
