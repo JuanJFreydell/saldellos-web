@@ -69,6 +69,7 @@ export default function Header() {
   // We do NOT auto-close on errors - modals stay open so user can retry
 
   return (
+    <>
     <header className="shadow-sm border-b border-gray-200 dark:border-zinc-700">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <h1 
@@ -231,11 +232,12 @@ export default function Header() {
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
       />
+    </header>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation - rendered outside header flow */}
       {!loading && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700 z-50">
-          <div className="flex justify-around items-stretch pt-2 pb-2">
+        <nav className="md:hidden !fixed !bottom-0 !left-0 !right-0 bg-white dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700 !z-[9999]" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))', position: 'fixed' }}>
+          <div className="flex justify-around items-stretch pt-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}>
             <a
               href="#"
               onClick={(e) => {
@@ -404,7 +406,7 @@ export default function Header() {
           </div>
         </nav>
       )}
-    </header>
+    </>
   );
 }
 
