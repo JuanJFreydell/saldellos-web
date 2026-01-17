@@ -48,7 +48,21 @@ async function ensurePublishTableMetadata(countryId: string, categoryId: string,
     .single();
 
   if (metadata) {
-    return tableName; // Metadata already exists, table should exist
+    // If stored table name uses old UUID-based naming, update it to new name-based scheme
+    // Old format: listing_publish_{uuid}_{uuid}
+    // New format: listing_publish_{country_name}_{category_name}
+    const isOldFormat = /^listing_publish_[a-f0-9_]{36,}_[a-f0-9_]{36,}$/.test(metadata.table_name);
+    
+    if (isOldFormat && metadata.table_name !== tableName) {
+      console.log(`Updating metadata: migrating from old table name "${metadata.table_name}" to new "${tableName}"`);
+      await supabaseAdmin
+        .from('listing_publish_metadata')
+        .update({ table_name: tableName })
+        .eq('country_id', countryId)
+        .eq('category_id', categoryId);
+    }
+    
+    return tableName; // Always use the new name-based table name
   }
 
   // Create the table using the database function (now uses names)
@@ -102,14 +116,40 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
 
   try {
     // 1. Clear existing data
-    const { error: deleteError } = await adminClient
-      .from(tableName)
-      .delete()
-      .neq('listing_id', ''); // Delete all
+    // First, verify the table exists by checking metadata
+    const { data: metadata } = await adminClient
+      .from('listing_publish_metadata')
+      .select('table_name')
+      .eq('country_id', countryId)
+      .eq('category_id', categoryId)
+      .single();
 
-    if (deleteError && deleteError.code !== 'PGRST116') {
-      // PGRST116 is "relation does not exist" - that's okay for first build
-      console.error(`Error clearing ${tableName}:`, deleteError);
+    // If metadata has a different table name, update it to the new name-based format
+    if (metadata && metadata.table_name !== tableName) {
+      console.log(`Table name mismatch: metadata has "${metadata.table_name}", expected "${tableName}". Updating metadata.`);
+      await adminClient
+        .from('listing_publish_metadata')
+        .update({ table_name: tableName })
+        .eq('country_id', countryId)
+        .eq('category_id', categoryId);
+    }
+
+    // 1. Clear existing data using TRUNCATE
+    // This removes ALL rows from the table, ensuring no stale data remains
+    try {
+      await adminClient.rpc('truncate_publish_table', { table_name: tableName });
+      console.log(`Truncated (cleared all data from) ${tableName}`);
+    } catch (truncateError: any) {
+      if (truncateError.code === 'PGRST116' || truncateError.code === 'PGRST205' || truncateError.message?.includes('does not exist')) {
+        // Table doesn't exist yet - that's okay, we'll create it during insert
+        console.log(`Table ${tableName} does not exist yet. Will be created during insert.`);
+      } else if (truncateError.code === '42883') {
+        // Function doesn't exist - migration 019 hasn't been run yet
+        console.warn(`Warning: truncate_publish_table function not found. Please run migration 019. Continuing without truncate.`);
+      } else {
+        // Other errors - log but continue, we'll try to insert anyway
+        console.warn(`Warning: Could not truncate ${tableName}:`, truncateError.message);
+      }
     }
 
     // 2. Get all subcategories for this category
@@ -342,9 +382,20 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
       })
     );
 
-    // 8. Insert into publish table
+    // 8. Ensure table exists before inserting
+    try {
+      await adminClient.rpc('create_publish_table', {
+        p_country_name: countryName,
+        p_category_name: categoryName,
+      });
+    } catch (rpcError: any) {
+      // Ignore errors - table might already exist
+      console.log(`Note: create_publish_table RPC call result for ${tableName}:`, rpcError.message || 'table may already exist');
+    }
+
+    // 9. Insert into publish table
+    // After TRUNCATE, we use simple INSERT (not upsert) since the table is empty
     if (transformedListings.length > 0) {
-      // Insert in batches to avoid payload size limits
       const batchSize = 100;
       for (let i = 0; i < transformedListings.length; i += batchSize) {
         const batch = transformedListings.slice(i, i + batchSize);
@@ -353,16 +404,35 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
           .insert(batch);
 
         if (insertError) {
-          // If table doesn't exist, we need to create it first
-          if (insertError.code === 'PGRST116' || insertError.message.includes('does not exist')) {
-            throw new Error(`Publish table ${tableName} does not exist. Please create it via migration first.`);
+          // If table doesn't exist, try to create it and retry
+          if (insertError.code === 'PGRST116' || insertError.code === 'PGRST205' || insertError.message.includes('does not exist')) {
+            console.log(`Table ${tableName} does not exist, attempting to create it...`);
+            try {
+              await adminClient.rpc('create_publish_table', {
+                p_country_name: countryName,
+                p_category_name: categoryName,
+              });
+              // Retry the insert
+              const { error: retryError } = await adminClient
+                .from(tableName)
+                .insert(batch);
+              if (retryError) {
+                throw new Error(`Failed to insert into ${tableName} after creating table: ${retryError.message}`);
+              }
+            } catch (createError: any) {
+              throw new Error(`Publish table ${tableName} does not exist and could not be created: ${createError.message}`);
+            }
+          } else {
+            throw new Error(`Failed to insert into ${tableName}: ${insertError.message}`);
           }
-          throw new Error(`Failed to insert into ${tableName}: ${insertError.message}`);
         }
       }
+      console.log(`Inserted ${transformedListings.length} listings into ${tableName}`);
+    } else {
+      console.log(`No listings to insert into ${tableName}`);
     }
 
-    // 9. Update metadata
+    // 10. Update metadata
     await adminClient
       .from('listing_publish_metadata')
       .update({ 

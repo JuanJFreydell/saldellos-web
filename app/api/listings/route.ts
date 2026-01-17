@@ -79,7 +79,11 @@ export async function POST(request: Request) {
     }
 
     const categoryId = categoryData.category_id.toString();
+    // Always use name-based table naming (new scheme)
     const tableName = getPublishTableName(country.trim(), category.trim());
+    
+    // Log the table name being used for debugging
+    console.log(`Using publish table: ${tableName} for country="${country.trim()}" category="${category.trim()}"`);
 
     // Try to ensure the publish table exists (create if it doesn't)
     try {
@@ -88,7 +92,11 @@ export async function POST(request: Request) {
         p_category_name: category.trim(),
       });
     } catch (rpcError: any) {
-      // Ignore errors - table might already exist or function might not be available
+      // If function doesn't exist or has wrong signature, it means migration 018 hasn't been run
+      if (rpcError.message?.includes('function create_publish_table') || rpcError.code === '42883') {
+        console.error('ERROR: Database function create_publish_table with name-based parameters not found. Please run migration 018_update_publish_table_function_names.sql');
+      }
+      // Ignore other errors - table might already exist
       console.log('Note: Could not create publish table (might already exist):', rpcError);
     }
 
