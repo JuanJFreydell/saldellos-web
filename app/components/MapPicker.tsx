@@ -38,19 +38,31 @@ const MapClickHandler = dynamic(
   { ssr: false }
 );
 
-// Component to get map instance reference
-const MapRefHandler = dynamic(
+// Component to update map view when position changes
+const MapViewUpdater = dynamic(
   () =>
     import("react-leaflet").then((mod) => {
-      return function MapRefHandler({
-        onMapReady,
+      return function MapViewUpdater({
+        center,
+        zoom,
       }: {
-        onMapReady: (map: any) => void;
+        center: [number, number];
+        zoom: number;
       }) {
         const map = mod.useMap();
         useEffect(() => {
-          onMapReady(map);
-        }, [map, onMapReady]);
+          if (map && center) {
+            // Use a small delay to ensure map is fully initialized
+            const timer = setTimeout(() => {
+              try {
+                map.setView(center, zoom, { animate: true });
+              } catch (error) {
+                console.error("Error updating map view:", error);
+              }
+            }, 100);
+            return () => clearTimeout(timer);
+          }
+        }, [map, center, zoom]);
         return null;
       };
     }),
@@ -78,8 +90,8 @@ export default function MapPicker({
   const [position, setPosition] = useState<[number, number]>([4.7110, -74.0721]); // Default to Bogotá
   const [mounted, setMounted] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
-  const [mapInstance, setMapInstance] = useState<any>(null);
   const [lastGeocodedAddress, setLastGeocodedAddress] = useState<string>("");
+  const [mapZoom, setMapZoom] = useState(13);
 
   // Parse initial coordinates
   useEffect(() => {
@@ -95,7 +107,7 @@ export default function MapPicker({
     }
   }, []);
 
-  // Update position when coordinates change externally
+  // Update position when coordinates change externally (but not from geocoding)
   useEffect(() => {
     if (coordinates) {
       const parts = coordinates.split(",");
@@ -103,14 +115,15 @@ export default function MapPicker({
         const parsedLat = parseFloat(parts[0].trim());
         const parsedLng = parseFloat(parts[1].trim());
         if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
-          setPosition([parsedLat, parsedLng]);
-          if (mapInstance) {
-            mapInstance.setView([parsedLat, parsedLng], mapInstance.getZoom());
+          const newPos: [number, number] = [parsedLat, parsedLng];
+          // Only update if position actually changed (avoid infinite loops)
+          if (Math.abs(position[0] - parsedLat) > 0.0001 || Math.abs(position[1] - parsedLng) > 0.0001) {
+            setPosition(newPos);
           }
         }
       }
     }
-  }, [coordinates, mapInstance]);
+  }, [coordinates]);
 
   const geocodeAddress = async (address: string) => {
     try {
@@ -137,12 +150,8 @@ export default function MapPicker({
         if (!isNaN(lat) && !isNaN(lon)) {
           const newPosition: [number, number] = [lat, lon];
           setPosition(newPosition);
+          setMapZoom(13); // Reset zoom when geocoding
           onCoordinatesChange(`${lat},${lon}`);
-          
-          // Update map view if map instance is available
-          if (mapInstance) {
-            mapInstance.setView(newPosition, 13);
-          }
         }
       }
     } catch (error) {
@@ -218,10 +227,9 @@ export default function MapPicker({
       <div className="w-full h-64 rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
         <MapContainer
           center={position}
-          zoom={13}
+          zoom={mapZoom}
           style={{ height: "100%", width: "100%", zIndex: 0 }}
           className="z-0"
-          key={`${position[0]}-${position[1]}`} // Force re-render when position changes significantly
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -240,7 +248,7 @@ export default function MapPicker({
             }}
           />
           <MapClickHandler onMapClick={handleMapClick} />
-          <MapRefHandler onMapReady={setMapInstance} />
+          <MapViewUpdater center={position} zoom={mapZoom} />
         </MapContainer>
       </div>
       <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
