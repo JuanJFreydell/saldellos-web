@@ -5,6 +5,7 @@ import { useState, FormEvent, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { authenticatedFetch } from "@/lib/api-client";
 import Header from "../components/Header";
+import MapPicker from "../components/MapPicker";
 
 interface Country {
   country_id: string;
@@ -587,23 +588,23 @@ export default function ListarPage() {
               />
             </div>
 
-            {/* Coordinates */}
+            {/* Coordinates - Map Picker */}
             <div>
               <label
                 htmlFor="coordinates"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                Coordenadas (lat,lng) *
+                Ubicación en el mapa *
               </label>
-              <input
-                type="text"
-                id="coordinates"
-                name="coordinates"
-                value={formData.coordinates}
-                onChange={handleInputChange}
+              <MapPicker
+                coordinates={formData.coordinates}
+                onCoordinatesChange={(coords) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    coordinates: coords,
+                  }));
+                }}
                 required
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-zinc-700 dark:border-gray-600 dark:text-white"
-                placeholder="ej: 4.7110,-74.0721"
               />
             </div>
 
