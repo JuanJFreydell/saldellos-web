@@ -910,21 +910,21 @@ export async function PATCH(request: Request) {
 
     // Trigger rebuild of publish table asynchronously
     // Get listing's subcategory to find category
-    const { data: updatedListing } = await adminClient
+    const { data: updatedListing } = await supabaseAdmin
       .from("listings")
       .select("subcategory_id")
       .eq("listing_id", listingId)
       .single();
 
     if (updatedListing?.subcategory_id) {
-      const { data: subcategoryData } = await adminClient
+      const { data: subcategoryData } = await supabaseAdmin
         .from("listing_subcategories")
         .select("category_id")
         .eq("subcategory_id", updatedListing.subcategory_id)
         .single();
 
       if (subcategoryData) {
-        const { data: categoryData } = await adminClient
+        const { data: categoryData } = await supabaseAdmin
           .from("listing_categories")
           .select("category_id, category_name")
           .eq("category_id", subcategoryData.category_id)
@@ -932,28 +932,28 @@ export async function PATCH(request: Request) {
 
         if (categoryData) {
           // Get country from listing address
-          const { data: addressData } = await adminClient
+          const { data: addressData } = await supabaseAdmin
             .from("listing_addresses")
             .select("neighborhood_id")
             .eq("listing_id", listingId)
             .single();
 
           if (addressData?.neighborhood_id) {
-            const { data: neighborhoodData } = await adminClient
+            const { data: neighborhoodData } = await supabaseAdmin
               .from("listing_neighborhoods")
               .select("city_id")
               .eq("neighborhood_id", addressData.neighborhood_id)
               .single();
 
             if (neighborhoodData?.city_id) {
-              const { data: cityData } = await adminClient
+              const { data: cityData } = await supabaseAdmin
                 .from("listing_cities")
                 .select("country_id")
                 .eq("city_id", neighborhoodData.city_id)
                 .single();
 
               if (cityData?.country_id) {
-                const { data: countryData } = await adminClient
+                const { data: countryData } = await supabaseAdmin
                   .from("countries")
                   .select("country_id, country_name")
                   .eq("country_id", cityData.country_id)

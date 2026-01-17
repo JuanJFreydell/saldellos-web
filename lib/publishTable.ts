@@ -22,6 +22,10 @@ export function getPublishTableName(countryId: string, categoryId: string): stri
  * Uses the database function to create the table dynamically
  */
 async function ensurePublishTableMetadata(countryId: string, categoryId: string): Promise<string> {
+  if (!supabaseAdmin) {
+    throw new Error('Database not configured');
+  }
+
   const tableName = getPublishTableName(countryId, categoryId);
   
   // Check if metadata exists
@@ -66,13 +70,20 @@ async function ensurePublishTableMetadata(countryId: string, categoryId: string)
  * Rebuild a specific publish table
  */
 export async function rebuildPublishTable(config: PublishTableConfig): Promise<void> {
+  if (!supabaseAdmin) {
+    throw new Error('Database not configured');
+  }
+
+  // Store in local variable so TypeScript knows it's non-null in callbacks
+  const adminClient = supabaseAdmin;
+
   const { countryId, categoryId, countryName, categoryName } = config;
   const tableName = await ensurePublishTableMetadata(countryId, categoryId);
 
   console.log(`Starting rebuild for ${tableName} (${countryName} - ${categoryName})`);
 
   // Mark as rebuilding
-  await supabaseAdmin
+  await adminClient
     .from('listing_publish_metadata')
     .update({ rebuild_in_progress: true })
     .eq('country_id', countryId)
@@ -80,7 +91,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
 
   try {
     // 1. Clear existing data
-    const { error: deleteError } = await supabaseAdmin
+    const { error: deleteError } = await adminClient
       .from(tableName)
       .delete()
       .neq('listing_id', ''); // Delete all
@@ -91,7 +102,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     // 2. Get all subcategories for this category
-    const { data: subcategories, error: subcategoriesError } = await supabaseAdmin
+    const { data: subcategories, error: subcategoriesError } = await adminClient
       .from('listing_subcategories')
       .select('subcategory_id')
       .eq('category_id', categoryId);
@@ -104,7 +115,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
 
     if (subcategoryIds.length === 0) {
       // No subcategories, mark as complete
-      await supabaseAdmin
+      await adminClient
         .from('listing_publish_metadata')
         .update({ 
           rebuild_in_progress: false,
@@ -117,7 +128,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     // 3. Get all cities in country
-    const { data: cities, error: citiesError } = await supabaseAdmin
+    const { data: cities, error: citiesError } = await adminClient
       .from('listing_cities')
       .select('city_id')
       .eq('country_id', countryId);
@@ -129,7 +140,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     const cityIds = cities?.map(c => c.city_id.toString()) || [];
 
     if (cityIds.length === 0) {
-      await supabaseAdmin
+      await adminClient
         .from('listing_publish_metadata')
         .update({ 
           rebuild_in_progress: false,
@@ -142,7 +153,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     // 4. Get neighborhoods in those cities
-    const { data: neighborhoods, error: neighborhoodsError } = await supabaseAdmin
+    const { data: neighborhoods, error: neighborhoodsError } = await adminClient
       .from('listing_neighborhoods')
       .select('neighborhood_id')
       .in('city_id', cityIds);
@@ -154,7 +165,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     const neighborhoodIds = neighborhoods?.map(n => n.neighborhood_id.toString()) || [];
 
     if (neighborhoodIds.length === 0) {
-      await supabaseAdmin
+      await adminClient
         .from('listing_publish_metadata')
         .update({ 
           rebuild_in_progress: false,
@@ -167,7 +178,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     // 5. Get listing_ids from addresses
-    const { data: addresses, error: addressesError } = await supabaseAdmin
+    const { data: addresses, error: addressesError } = await adminClient
       .from('listing_addresses')
       .select('listing_id, neighborhood_id')
       .in('neighborhood_id', neighborhoodIds);
@@ -179,7 +190,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     const listingIds = addresses?.map(a => a.listing_id) || [];
 
     if (listingIds.length === 0) {
-      await supabaseAdmin
+      await adminClient
         .from('listing_publish_metadata')
         .update({ 
           rebuild_in_progress: false,
@@ -192,7 +203,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     // 6. Get all active listings
-    const { data: listings, error: listingsError } = await supabaseAdmin
+    const { data: listings, error: listingsError } = await adminClient
       .from('listings')
       .select(`
         listing_id,
@@ -211,7 +222,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     if (!listings || listings.length === 0) {
-      await supabaseAdmin
+      await adminClient
         .from('listing_publish_metadata')
         .update({ 
           rebuild_in_progress: false,
@@ -229,7 +240,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     const transformedListings = await Promise.all(
       listings.map(async (listing: any) => {
         // Get address data
-        const { data: address } = await supabaseAdmin
+        const { data: address } = await adminClient
           .from('listing_addresses')
           .select('coordinates, neighborhood_id')
           .eq('listing_id', listing.listing_id)
@@ -243,7 +254,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
 
         if (address?.neighborhood_id) {
           neighborhoodId = address.neighborhood_id;
-          const { data: neighborhoodData } = await supabaseAdmin
+          const { data: neighborhoodData } = await adminClient
             .from('listing_neighborhoods')
             .select('neighborhood_name, city_id')
             .eq('neighborhood_id', address.neighborhood_id)
@@ -253,7 +264,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
           cityId = neighborhoodData?.city_id || null;
 
           if (neighborhoodData?.city_id) {
-            const { data: cityData } = await supabaseAdmin
+            const { data: cityData } = await adminClient
               .from('listing_cities')
               .select('city_name, country_id')
               .eq('city_id', neighborhoodData.city_id)
@@ -262,7 +273,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
             city = cityData?.city_name || null;
 
             if (cityData?.country_id) {
-              const { data: countryData } = await supabaseAdmin
+              const { data: countryData } = await adminClient
                 .from('countries')
                 .select('country_name')
                 .eq('country_id', cityData.country_id)
@@ -280,7 +291,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
 
         if (listing.subcategory_id) {
           subcategoryId = listing.subcategory_id;
-          const { data: subcategoryData } = await supabaseAdmin
+          const { data: subcategoryData } = await adminClient
             .from('listing_subcategories')
             .select('subcategory_name, category_id')
             .eq('subcategory_id', listing.subcategory_id)
@@ -289,7 +300,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
           subcategory = subcategoryData?.subcategory_name || null;
 
           if (subcategoryData?.category_id) {
-            const { data: categoryData } = await supabaseAdmin
+            const { data: categoryData } = await adminClient
               .from('listing_categories')
               .select('category_name')
               .eq('category_id', subcategoryData.category_id)
@@ -326,7 +337,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
       const batchSize = 100;
       for (let i = 0; i < transformedListings.length; i += batchSize) {
         const batch = transformedListings.slice(i, i + batchSize);
-        const { error: insertError } = await supabaseAdmin
+        const { error: insertError } = await adminClient
           .from(tableName)
           .insert(batch);
 
@@ -341,7 +352,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     }
 
     // 9. Update metadata
-    await supabaseAdmin
+    await adminClient
       .from('listing_publish_metadata')
       .update({ 
         rebuild_in_progress: false,
@@ -356,7 +367,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
     console.error(`Error rebuilding publish table ${tableName}:`, error);
     
     // Mark as not rebuilding on error
-    await supabaseAdmin
+    await adminClient
       .from('listing_publish_metadata')
       .update({ rebuild_in_progress: false })
       .eq('country_id', countryId)
@@ -370,10 +381,17 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
  * Rebuild all publish tables (for scheduled job)
  */
 export async function rebuildAllPublishTables(): Promise<void> {
+  if (!supabaseAdmin) {
+    throw new Error('Database not configured');
+  }
+
+  // Store in local variable so TypeScript knows it's non-null
+  const adminClient = supabaseAdmin;
+
   console.log('Starting rebuild of all publish tables');
   
   // Get Colombia + "para la venta" (current use case)
-  const { data: colombia, error: colombiaError } = await supabaseAdmin
+  const { data: colombia, error: colombiaError } = await adminClient
     .from('countries')
     .select('country_id, country_name')
     .ilike('country_name', 'Colombia')
@@ -384,7 +402,7 @@ export async function rebuildAllPublishTables(): Promise<void> {
     return;
   }
 
-  const { data: category, error: categoryError } = await supabaseAdmin
+  const { data: category, error: categoryError } = await adminClient
     .from('listing_categories')
     .select('category_id, category_name')
     .ilike('category_name', 'para la venta')

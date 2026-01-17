@@ -4,6 +4,13 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 500 }
+      );
+    }
+
     // Optional: Add authentication/authorization here
     // For now, you might want to add a secret key check
     const authHeader = request.headers.get('authorization');
