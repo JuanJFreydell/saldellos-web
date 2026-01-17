@@ -372,6 +372,20 @@ function EditListingContent() {
         throw new Error(data.error || "Error al actualizar el listado");
       }
 
+      // Trigger cache rebuild asynchronously (don't wait for response)
+      if (listingId) {
+        authenticatedFetch("/api/rebuild-cache", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ listing_id: listingId }),
+        }).catch(err => {
+          console.error("Error triggering cache rebuild:", err);
+          // Don't show error to user - rebuild happens in background
+        });
+      }
+
       setSuccess(true);
       setTimeout(() => {
         router.push("/misListados");

@@ -54,12 +54,47 @@ export default function MisListadosPage() {
 
   async function handleDeleteListing(listingId: string) {
     try {
+      // Get full listing data before deleting (needed for cache rebuild)
+      let country: string | null = null;
+      let category: string | null = null;
+      
+      try {
+        const listingResponse = await authenticatedFetch(`/api/manageListings?listing_id=${listingId}`);
+        if (listingResponse.ok) {
+          const listingData = await listingResponse.json();
+          if (listingData.listing?.country && listingData.listing?.category) {
+            country = listingData.listing.country;
+            category = listingData.listing.category;
+          }
+        }
+      } catch (fetchErr) {
+        console.warn("Could not fetch listing data before delete:", fetchErr);
+      }
+
+      // Delete the listing
       const response = await authenticatedFetch(`/api/manageListings?listing_id=${listingId}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
         throw new Error("Error al eliminar el listado");
+      }
+
+      // Trigger cache rebuild if we have country and category
+      if (country && category) {
+        authenticatedFetch("/api/rebuild-cache", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            country: country,
+            category: category,
+          }),
+        }).catch(err => {
+          console.error("Error triggering cache rebuild:", err);
+          // Don't show error to user - rebuild happens in background
+        });
       }
 
       // Refresh the page to show updated listings

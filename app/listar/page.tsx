@@ -357,6 +357,20 @@ export default function ListarPage() {
         throw new Error(data.error || "Error al crear el listado");
       }
 
+      // Trigger cache rebuild asynchronously (don't wait for response)
+      if (data.listing_id) {
+        authenticatedFetch("/api/rebuild-cache", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ listing_id: data.listing_id }),
+        }).catch(err => {
+          console.error("Error triggering cache rebuild:", err);
+          // Don't show error to user - rebuild happens in background
+        });
+      }
+
       setSuccess(true);
       
       // Clean up preview URLs
