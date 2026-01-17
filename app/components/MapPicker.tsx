@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-// Import Leaflet CSS - Next.js handles this properly
-if (typeof window !== "undefined") {
-  require("leaflet/dist/leaflet.css");
-}
-
 // Dynamically import the entire map component to avoid SSR issues
-// This ensures Leaflet only loads on the client side
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
@@ -23,39 +17,31 @@ const Marker = dynamic(
   { ssr: false }
 );
 
+// Create a component that uses useMapEvents hook
+// This must be inside MapContainer
+const MapClickHandler = dynamic(
+  () =>
+    import("react-leaflet").then((mod) => {
+      return function MapClickHandler({
+        onMapClick,
+      }: {
+        onMapClick: (lat: number, lng: number) => void;
+      }) {
+        mod.useMapEvents({
+          click: (e: any) => {
+            onMapClick(e.latlng.lat, e.latlng.lng);
+          },
+        });
+        return null;
+      };
+    }),
+  { ssr: false }
+);
+
 interface MapPickerProps {
   coordinates: string;
   onCoordinatesChange: (coordinates: string) => void;
   required?: boolean;
-}
-
-// Component to handle map clicks
-function MapClickHandler({
-  onMapClick,
-}: {
-  onMapClick: (lat: number, lng: number) => void;
-}) {
-  const [MapEventsComponent, setMapEventsComponent] = useState<React.ComponentType | null>(null);
-  
-  useEffect(() => {
-    // Only import and use useMapEvents on client side
-    if (typeof window !== "undefined") {
-      import("react-leaflet").then((mod) => {
-        const MapEvents = () => {
-          mod.useMapEvents({
-            click: (e: any) => {
-              onMapClick(e.latlng.lat, e.latlng.lng);
-            },
-          });
-          return null;
-        };
-        setMapEventsComponent(() => MapEvents);
-      });
-    }
-  }, [onMapClick]);
-  
-  if (!MapEventsComponent) return null;
-  return <MapEventsComponent />;
 }
 
 export default function MapPicker({
@@ -114,6 +100,9 @@ export default function MapPicker({
 
         L.default.Marker.prototype.options.icon = defaultIcon;
         setLeafletLoaded(true);
+      }).catch((err) => {
+        console.error("Error loading Leaflet:", err);
+        setLeafletLoaded(true); // Still allow map to render
       });
     }
   }, []);
