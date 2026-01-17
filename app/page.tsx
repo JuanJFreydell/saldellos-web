@@ -2,7 +2,56 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Header from "./components/Header";
+
+// Dynamically import map components to avoid SSR issues
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
+
+// Component to update map view when center changes
+const MapViewUpdater = dynamic(
+  () =>
+    import("react-leaflet").then((mod) => {
+      return function MapViewUpdater({
+        center,
+        zoom,
+      }: {
+        center: [number, number];
+        zoom: number;
+      }) {
+        const map = mod.useMap();
+        useEffect(() => {
+          if (map && center) {
+            const timer = setTimeout(() => {
+              try {
+                map.setView(center, zoom, { animate: true });
+              } catch (error) {
+                console.error("Error updating map view:", error);
+              }
+            }, 100);
+            return () => clearTimeout(timer);
+          }
+        }, [map, center, zoom]);
+        return null;
+      };
+    }),
+  { ssr: false }
+);
 
 interface ListingMetadata {
   listing_id: string;
@@ -128,6 +177,9 @@ export default function Home() {
   // Mobile dropdown state - only one can be open at a time
   const [openDropdown, setOpenDropdown] = useState<"city" | "neighborhood" | "subcategory" | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<"gallery" | "list" | "map">("gallery");
 
   // Check if there are more batches
   const hasMoreBatches = listings.length === 100;
@@ -803,8 +855,55 @@ export default function Home() {
           </div>
         )}
 
-        <div className="text-lg md:text-3xl font-bold dark:text-gray-400 pt-2"> Lista tus muebles usados hoy </div>
-        <div className="text-xs md:text-lg font-bold text-gray-500 dark:text-gray-400 pb-5"> Mostrando los listados más recientes </div>
+        <div className="flex items-center justify-between pt-2 pb-5">
+          <div>
+            <div className="text-lg md:text-3xl font-bold dark:text-gray-400"> Lista tus muebles usados hoy </div>
+            <div className="text-xs md:text-lg font-bold text-gray-500 dark:text-gray-400"> Mostrando los listados más recientes </div>
+          </div>
+          
+          {/* View Mode Selector */}
+          <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1 flex items-center gap-1">
+            <button
+              onClick={() => setViewMode("gallery")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "gallery"
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+              title="Vista de galería"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "list"
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+              title="Vista de lista"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode("map")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "map"
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+              title="Vista de mapa"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
 
         {/* Loading State */}
@@ -816,7 +915,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Listings Grid */}
+        {/* Listings Display */}
         {!loading && (
           <>
             {filteredListings.length === 0 ? (
@@ -827,11 +926,29 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  {filteredListings.map((listing) => (
-                    <ListingCard key={listing.listing_id} listing={listing} />
-                  ))}
-                </div>
+                {viewMode === "gallery" && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {filteredListings.map((listing) => (
+                      <ListingCard key={listing.listing_id} listing={listing} />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === "list" && (
+                  <div className="space-y-4 mb-8">
+                    {filteredListings.map((listing) => (
+                      <ListingRowCard key={listing.listing_id} listing={listing} />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === "map" && (
+                  <ListingsMapView 
+                    listings={filteredListings}
+                    selectedCity={selectedCity}
+                    selectedNeighborhood={selectedNeighborhood}
+                  />
+                )}
 
                 {/* Pagination */}
                 <div className="flex justify-center items-center gap-4 py-8">
@@ -860,6 +977,7 @@ export default function Home() {
   );
 }
 
+// Gallery View Card (current implementation)
 function ListingCard({ listing }: { listing: ListingMetadata }) {
   const router = useRouter();
 
@@ -912,6 +1030,236 @@ function ListingCard({ listing }: { listing: ListingMetadata }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// List View Row Card (small thumbnail, horizontal layout)
+function ListingRowCard({ listing }: { listing: ListingMetadata }) {
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    router.push(`/listings/${listing.listing_id}`);
+  };
+
+  return (
+    <div
+      onClick={handleCardClick}
+      className="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer flex flex-row"
+    >
+      {/* Small Thumbnail */}
+      <div className="w-24 h-24 md:w-32 md:h-32 bg-zinc-50 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0">
+        {listing.thumbnail ? (
+          <img
+            src={listing.thumbnail}
+            alt={listing.title}
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-gray-400 text-xs">Sin imagen</span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 p-4 flex flex-col justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-black dark:text-zinc-50 mb-1 line-clamp-1">
+            {listing.title}
+          </h3>
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+            {listing.city && <span>{listing.city}</span>}
+            {listing.neighborhood && (
+              <>
+                {listing.city && <span>•</span>}
+                <span>{listing.neighborhood}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+            ${listing.price}
+          </span>
+          {listing.subcategory && (
+            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 capitalize">
+              {listing.subcategory}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Map View Component
+function ListingsMapView({ 
+  listings, 
+  selectedCity, 
+  selectedNeighborhood 
+}: { 
+  listings: ListingMetadata[];
+  selectedCity: string;
+  selectedNeighborhood: string;
+}) {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([4.7110, -74.0721]); // Default to Bogotá
+  const [mapZoom, setMapZoom] = useState(12);
+  const [lastGeocodedAddress, setLastGeocodedAddress] = useState<string>("");
+
+  // Geocode city/neighborhood when filters change
+  useEffect(() => {
+    const geocodeLocation = async () => {
+      let addressString = "";
+      
+      if (selectedNeighborhood && selectedCity) {
+        addressString = `${selectedNeighborhood}, ${selectedCity}, Colombia`;
+      } else if (selectedCity) {
+        addressString = `${selectedCity}, Colombia`;
+      } else {
+        // No filters, default to Bogotá
+        setMapCenter([4.7110, -74.0721]);
+        setMapZoom(12);
+        setLastGeocodedAddress("");
+        return;
+      }
+
+      // Only geocode if address changed
+      if (addressString === lastGeocodedAddress) {
+        return;
+      }
+
+      setLastGeocodedAddress(addressString);
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressString)}&limit=1`,
+          {
+            headers: {
+              "User-Agent": "Saldellos App",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Geocoding failed");
+        }
+
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          
+          if (!isNaN(lat) && !isNaN(lon)) {
+            setMapCenter([lat, lon]);
+            setMapZoom(selectedNeighborhood ? 14 : 12); // Zoom in more for neighborhoods
+          }
+        }
+      } catch (error) {
+        console.error("Error geocoding location:", error);
+        // Keep default Bogotá on error
+      }
+    };
+
+    geocodeLocation();
+  }, [selectedCity, selectedNeighborhood, lastGeocodedAddress]);
+
+  // Load Leaflet on client side
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      import("leaflet").then((L) => {
+        const defaultIcon = L.default.icon({
+          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+          iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        });
+        L.default.Marker.prototype.options.icon = defaultIcon;
+        setLeafletLoaded(true);
+      }).catch((err) => {
+        console.error("Error loading Leaflet:", err);
+        setLeafletLoaded(true);
+      });
+    }
+  }, []);
+
+  const parseCoordinates = (coords: string | null): [number, number] | null => {
+    if (!coords) return null;
+    const parts = coords.split(",");
+    if (parts.length === 2) {
+      const lat = parseFloat(parts[0].trim());
+      const lng = parseFloat(parts[1].trim());
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return [lat, lng];
+      }
+    }
+    return null;
+  };
+
+  if (!mounted || !leafletLoaded) {
+    return (
+      <div className="w-full h-[600px] rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-8">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          Cargando mapa...
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-[600px] rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden mb-8">
+      <MapContainer
+        center={mapCenter}
+        zoom={mapZoom}
+        style={{ height: "100%", width: "100%" }}
+        key={`map-${mapCenter[0]}-${mapCenter[1]}`}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          subdomains="abcd"
+          maxZoom={20}
+          minZoom={1}
+          detectRetina={true}
+        />
+        <MapViewUpdater center={mapCenter} zoom={mapZoom} />
+        {listings.map((listing) => {
+          const coords = parseCoordinates(listing.coordinates);
+          if (!coords) return null;
+          
+          return (
+            <Marker key={listing.listing_id} position={coords}>
+              <Popup>
+                <div className="p-2">
+                  <h3 className="font-semibold text-sm mb-1">{listing.title}</h3>
+                  <p className="text-lg font-bold text-blue-600 mb-1">${listing.price}</p>
+                  {listing.thumbnail && (
+                    <img
+                      src={listing.thumbnail}
+                      alt={listing.title}
+                      className="w-32 h-32 object-contain mb-2"
+                    />
+                  )}
+                  <button
+                    onClick={() => router.push(`/listings/${listing.listing_id}`)}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Ver detalles
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
     </div>
   );
 }
