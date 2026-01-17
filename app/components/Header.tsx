@@ -199,6 +199,16 @@ export default function Header() {
                 </button>
               </>
             )}
+            <a
+              href="/privacy"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push("/privacy");
+              }}
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+            >
+              Privacidad
+            </a>
           </div>
         )}
       </div>
