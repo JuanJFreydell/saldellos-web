@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "./components/Header";
 
 interface ListingMetadata {
@@ -102,6 +102,7 @@ function TypewriterTitle() {
 export default function Home() {
   const router = useRouter();
   const [listings, setListings] = useState<ListingMetadata[]>([]);
+  const [allListings, setAllListings] = useState<ListingMetadata[]>([]); // Store all unfiltered listings
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentBatch, setCurrentBatch] = useState(1);
@@ -225,9 +226,8 @@ export default function Home() {
         requestBody.city = selectedCity;
       }
 
-      if (selectedNeighborhood) {
-        requestBody.neighborhood = selectedNeighborhood;
-      }
+      // Note: We don't include neighborhood in the API call anymore
+      // Neighborhood filtering is done client-side
 
       const response = await fetch("/api/listings", {
         method: "POST",
@@ -244,9 +244,12 @@ export default function Home() {
       const data = await response.json();
       const fetchedListings = data.listings || [];
       
+      // Store all listings (unfiltered) for client-side neighborhood filtering
       // Only update if we got results, or if it's the first batch
       if (fetchedListings.length > 0 || batch === 1) {
-        setListings(fetchedListings);
+        setAllListings(fetchedListings);
+        // Apply client-side filters (neighborhood and subcategory)
+        applyClientSideFilters(fetchedListings);
       }
       
       setTotal(data.total || 0);
@@ -295,6 +298,27 @@ export default function Home() {
     }
   };
 
+  // Apply client-side filters (neighborhood and subcategory) to listings
+  const applyClientSideFilters = useCallback((listingsToFilter: ListingMetadata[]) => {
+    let filtered = listingsToFilter;
+
+    // Filter by neighborhood (client-side)
+    if (selectedNeighborhood) {
+      filtered = filtered.filter(
+        (listing) => listing.neighborhood?.toLowerCase() === selectedNeighborhood.toLowerCase()
+      );
+    }
+
+    // Filter by subcategory (client-side)
+    if (selectedSubcategory) {
+      filtered = filtered.filter(
+        (listing) => listing.subcategory?.toLowerCase() === selectedSubcategory.toLowerCase()
+      );
+    }
+
+    setListings(filtered);
+  }, [selectedNeighborhood, selectedSubcategory]);
+
   // Initial load - fetch listings for Colombia
   useEffect(() => {
     if (colombiaId && initialLoad) {
@@ -304,7 +328,8 @@ export default function Home() {
     }
   }, [colombiaId, initialLoad]);
 
-  // Auto-search when city or neighborhood filters change (but not on initial load)
+  // Auto-search when city filter changes (but not on initial load)
+  // Neighborhood changes are handled client-side, so we don't need to fetch again
   useEffect(() => {
     if (initialLoad || !colombiaId) return; // Don't trigger search during initial load
 
@@ -315,7 +340,14 @@ export default function Home() {
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [selectedCity, selectedNeighborhood]); // Removed initialLoad and colombiaId from dependencies
+  }, [selectedCity]); // Only watch selectedCity, not selectedNeighborhood
+
+  // Apply client-side filters when neighborhood or subcategory changes
+  useEffect(() => {
+    if (allListings.length > 0) {
+      applyClientSideFilters(allListings);
+    }
+  }, [selectedNeighborhood, selectedSubcategory, allListings, applyClientSideFilters]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -343,12 +375,9 @@ export default function Home() {
     }
   };
 
-  // Filter listings by subcategory on the frontend
-  const filteredListings = selectedSubcategory
-    ? listings.filter(
-        (listing) => listing.subcategory?.toLowerCase() === selectedSubcategory.toLowerCase()
-      )
-    : listings;
+  // Listings are already filtered by neighborhood and subcategory in applyClientSideFilters
+  // So we can use listings directly
+  const filteredListings = listings;
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
