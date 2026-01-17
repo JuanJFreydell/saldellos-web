@@ -8,9 +8,10 @@ DECLARE
   v_country_name_clean TEXT;
   v_category_name_clean TEXT;
 BEGIN
-  -- Sanitize names for table names: lowercase, replace spaces and special chars with underscores
-  v_country_name_clean := LOWER(REGEXP_REPLACE(p_country_name, '[^a-z0-9]', '_', 'g'));
-  v_category_name_clean := LOWER(REGEXP_REPLACE(p_category_name, '[^a-z0-9]', '_', 'g'));
+  -- Sanitize names for table names: lowercase first, then replace non-alphanumeric with underscores
+  -- IMPORTANT: LOWER must be applied BEFORE REGEXP_REPLACE, otherwise uppercase letters get removed
+  v_country_name_clean := REGEXP_REPLACE(LOWER(p_country_name), '[^a-z0-9]', '_', 'g');
+  v_category_name_clean := REGEXP_REPLACE(LOWER(p_category_name), '[^a-z0-9]', '_', 'g');
   
   -- Remove multiple consecutive underscores
   v_country_name_clean := REGEXP_REPLACE(v_country_name_clean, '_+', '_', 'g');
