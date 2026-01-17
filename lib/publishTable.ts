@@ -8,25 +8,36 @@ interface PublishTableConfig {
 }
 
 /**
- * Get the table name for a country+category combination
+ * Sanitize a string for use as a table name
  */
-export function getPublishTableName(countryId: string, categoryId: string): string {
-  // Replace UUID dashes with underscores for valid table name
-  const countryIdClean = countryId.replace(/-/g, '_');
-  const categoryIdClean = categoryId.replace(/-/g, '_');
-  return `listing_publish_${countryIdClean}_${categoryIdClean}`;
+function sanitizeTableName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')  // Replace non-alphanumeric with underscore
+    .replace(/_+/g, '_')          // Replace multiple underscores with single
+    .replace(/^_|_$/g, '');        // Remove leading/trailing underscores
+}
+
+/**
+ * Get the table name for a country+category combination
+ * Uses country and category names instead of IDs for readability
+ */
+export function getPublishTableName(countryName: string, categoryName: string): string {
+  const countryClean = sanitizeTableName(countryName);
+  const categoryClean = sanitizeTableName(categoryName);
+  return `listing_publish_${countryClean}_${categoryClean}`;
 }
 
 /**
  * Create a publish table if it doesn't exist
  * Uses the database function to create the table dynamically
  */
-async function ensurePublishTableMetadata(countryId: string, categoryId: string): Promise<string> {
+async function ensurePublishTableMetadata(countryId: string, categoryId: string, countryName: string, categoryName: string): Promise<string> {
   if (!supabaseAdmin) {
     throw new Error('Database not configured');
   }
 
-  const tableName = getPublishTableName(countryId, categoryId);
+  const tableName = getPublishTableName(countryName, categoryName);
   
   // Check if metadata exists
   const { data: metadata } = await supabaseAdmin
@@ -40,11 +51,11 @@ async function ensurePublishTableMetadata(countryId: string, categoryId: string)
     return tableName; // Metadata already exists, table should exist
   }
 
-  // Create the table using the database function
+  // Create the table using the database function (now uses names)
   const { data: createdTableName, error: createError } = await supabaseAdmin
     .rpc('create_publish_table', {
-      p_country_id: countryId,
-      p_category_id: categoryId,
+      p_country_name: countryName,
+      p_category_name: categoryName,
     });
 
   if (createError) {
@@ -78,7 +89,7 @@ export async function rebuildPublishTable(config: PublishTableConfig): Promise<v
   const adminClient = supabaseAdmin;
 
   const { countryId, categoryId, countryName, categoryName } = config;
-  const tableName = await ensurePublishTableMetadata(countryId, categoryId);
+  const tableName = await ensurePublishTableMetadata(countryId, categoryId, countryName, categoryName);
 
   console.log(`Starting rebuild for ${tableName} (${countryName} - ${categoryName})`);
 

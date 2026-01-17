@@ -79,13 +79,13 @@ export async function POST(request: Request) {
     }
 
     const categoryId = categoryData.category_id.toString();
-    const tableName = getPublishTableName(countryId, categoryId);
+    const tableName = getPublishTableName(country.trim(), category.trim());
 
     // Try to ensure the publish table exists (create if it doesn't)
     try {
       await adminClient.rpc('create_publish_table', {
-        p_country_id: countryId,
-        p_category_id: categoryId,
+        p_country_name: country.trim(),
+        p_category_name: category.trim(),
       });
     } catch (rpcError: any) {
       // Ignore errors - table might already exist or function might not be available
