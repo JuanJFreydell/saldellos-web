@@ -38,21 +38,48 @@ const MapClickHandler = dynamic(
   { ssr: false }
 );
 
+// Component to get map instance reference
+const MapRefHandler = dynamic(
+  () =>
+    import("react-leaflet").then((mod) => {
+      return function MapRefHandler({
+        onMapReady,
+      }: {
+        onMapReady: (map: any) => void;
+      }) {
+        const map = mod.useMap();
+        useEffect(() => {
+          onMapReady(map);
+        }, [map, onMapReady]);
+        return null;
+      };
+    }),
+  { ssr: false }
+);
+
 interface MapPickerProps {
   coordinates: string;
   onCoordinatesChange: (coordinates: string) => void;
   required?: boolean;
+  cityName?: string;
+  neighborhoodName?: string;
+  countryName?: string;
 }
 
 export default function MapPicker({
   coordinates,
   onCoordinatesChange,
   required = false,
+  cityName,
+  neighborhoodName,
+  countryName,
 }: MapPickerProps) {
   // Parse coordinates
   const [position, setPosition] = useState<[number, number]>([4.7110, -74.0721]); // Default to Bogotá
   const [mounted, setMounted] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [lastGeocodedAddress, setLastGeocodedAddress] = useState<string>("");
 
   // Parse initial coordinates
   useEffect(() => {
@@ -77,10 +104,66 @@ export default function MapPicker({
         const parsedLng = parseFloat(parts[1].trim());
         if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
           setPosition([parsedLat, parsedLng]);
+          if (mapInstance) {
+            mapInstance.setView([parsedLat, parsedLng], mapInstance.getZoom());
+          }
         }
       }
     }
-  }, [coordinates]);
+  }, [coordinates, mapInstance]);
+
+  const geocodeAddress = async (address: string) => {
+    try {
+      // Use OpenStreetMap Nominatim geocoding API (free, no API key required)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+        {
+          headers: {
+            "User-Agent": "Saldellos App", // Required by Nominatim
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Geocoding failed");
+      }
+
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        
+        if (!isNaN(lat) && !isNaN(lon)) {
+          const newPosition: [number, number] = [lat, lon];
+          setPosition(newPosition);
+          onCoordinatesChange(`${lat},${lon}`);
+          
+          // Update map view if map instance is available
+          if (mapInstance) {
+            mapInstance.setView(newPosition, 13);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      // Silently fail - user can still manually set coordinates
+    }
+  };
+
+  // Geocode when city and neighborhood are provided
+  useEffect(() => {
+    if (cityName && neighborhoodName && cityName.trim() && neighborhoodName.trim()) {
+      const addressString = `${neighborhoodName}, ${cityName}${countryName ? `, ${countryName}` : ""}`;
+      
+      // Only geocode if address changed
+      if (addressString !== lastGeocodedAddress) {
+        setLastGeocodedAddress(addressString);
+        geocodeAddress(addressString);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityName, neighborhoodName, countryName]);
 
   // Load Leaflet and fix marker icon on client side only
   useEffect(() => {
@@ -138,6 +221,7 @@ export default function MapPicker({
           zoom={13}
           style={{ height: "100%", width: "100%", zIndex: 0 }}
           className="z-0"
+          key={`${position[0]}-${position[1]}`} // Force re-render when position changes significantly
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -156,6 +240,7 @@ export default function MapPicker({
             }}
           />
           <MapClickHandler onMapClick={handleMapClick} />
+          <MapRefHandler onMapReady={setMapInstance} />
         </MapContainer>
       </div>
       <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">

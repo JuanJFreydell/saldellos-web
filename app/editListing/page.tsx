@@ -598,6 +598,10 @@ function EditListingContent() {
                   coordinates: coords,
                 }));
               }}
+              required
+              cityName={formData.city || undefined}
+              neighborhoodName={formData.neighborhood || undefined}
+              countryName={formData.country || undefined}
             />
           </div>
 
