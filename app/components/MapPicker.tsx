@@ -91,7 +91,7 @@ export default function MapPicker({
   const [mounted, setMounted] = useState(false);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [lastGeocodedAddress, setLastGeocodedAddress] = useState<string>("");
-  const [mapZoom, setMapZoom] = useState(13);
+  const [mapZoom, setMapZoom] = useState(15); // More zoomed in by default
 
   // Parse initial coordinates
   useEffect(() => {
@@ -150,7 +150,7 @@ export default function MapPicker({
         if (!isNaN(lat) && !isNaN(lon)) {
           const newPosition: [number, number] = [lat, lon];
           setPosition(newPosition);
-          setMapZoom(13); // Reset zoom when geocoding
+          setMapZoom(15); // More zoomed in when geocoding
           onCoordinatesChange(`${lat},${lon}`);
         }
       }
