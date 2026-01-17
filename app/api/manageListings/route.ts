@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { rebuildPublishTable } from "@/lib/publishTable";
 import { getAuthenticatedUser, getUserProfile } from "@/lib/auth-server";
 import { randomUUID } from "crypto";
 
@@ -475,6 +476,42 @@ export async function POST(request: Request) {
       );
     }
 
+    // Trigger rebuild of publish table asynchronously
+    // Get category from subcategory
+    const { data: subcategoryData } = await adminClient
+      .from("listing_subcategories")
+      .select("category_id")
+      .eq("subcategory_id", body.subcategory_id)
+      .single();
+
+    if (subcategoryData) {
+      const { data: categoryData } = await adminClient
+        .from("listing_categories")
+        .select("category_id, category_name")
+        .eq("category_id", subcategoryData.category_id)
+        .single();
+
+      if (categoryData) {
+        const { data: countryDataForRebuild } = await adminClient
+          .from("countries")
+          .select("country_id, country_name")
+          .eq("country_id", countryId)
+          .single();
+
+        if (countryDataForRebuild) {
+          // Rebuild asynchronously (don't wait)
+          rebuildPublishTable({
+            countryId: countryDataForRebuild.country_id.toString(),
+            categoryId: categoryData.category_id.toString(),
+            countryName: countryDataForRebuild.country_name,
+            categoryName: categoryData.category_name,
+          }).catch(err => {
+            console.error('Background rebuild error after listing creation:', err);
+          });
+        }
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -868,6 +905,75 @@ export async function PATCH(request: Request) {
           { error: "Failed to update listing address" },
           { status: 500 }
         );
+      }
+    }
+
+    // Trigger rebuild of publish table asynchronously
+    // Get listing's subcategory to find category
+    const { data: updatedListing } = await adminClient
+      .from("listings")
+      .select("subcategory_id")
+      .eq("listing_id", listingId)
+      .single();
+
+    if (updatedListing?.subcategory_id) {
+      const { data: subcategoryData } = await adminClient
+        .from("listing_subcategories")
+        .select("category_id")
+        .eq("subcategory_id", updatedListing.subcategory_id)
+        .single();
+
+      if (subcategoryData) {
+        const { data: categoryData } = await adminClient
+          .from("listing_categories")
+          .select("category_id, category_name")
+          .eq("category_id", subcategoryData.category_id)
+          .single();
+
+        if (categoryData) {
+          // Get country from listing address
+          const { data: addressData } = await adminClient
+            .from("listing_addresses")
+            .select("neighborhood_id")
+            .eq("listing_id", listingId)
+            .single();
+
+          if (addressData?.neighborhood_id) {
+            const { data: neighborhoodData } = await adminClient
+              .from("listing_neighborhoods")
+              .select("city_id")
+              .eq("neighborhood_id", addressData.neighborhood_id)
+              .single();
+
+            if (neighborhoodData?.city_id) {
+              const { data: cityData } = await adminClient
+                .from("listing_cities")
+                .select("country_id")
+                .eq("city_id", neighborhoodData.city_id)
+                .single();
+
+              if (cityData?.country_id) {
+                const { data: countryData } = await adminClient
+                  .from("countries")
+                  .select("country_id, country_name")
+                  .eq("country_id", cityData.country_id)
+                  .single();
+
+                if (countryData) {
+                  // Rebuild asynchronously (don't wait)
+                  rebuildPublishTable({
+                    countryId: countryData.country_id.toString(),
+                    categoryId: categoryData.category_id.toString(),
+                    countryName: countryData.country_name,
+                    categoryName: categoryData.category_name,
+                  }).catch(err => {
+                    console.error('Background rebuild error after listing update:', err);
+                  });
+                }
+              }
+            }
+          }
+        }
       }
     }
 

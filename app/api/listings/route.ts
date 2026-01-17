@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { getPublishTableName } from "@/lib/publishTable";
 
 interface ListingsRequest {
   country: string;           // Required
@@ -19,12 +20,10 @@ export async function POST(request: Request) {
     }
 
     const adminClient = supabaseAdmin;
-
-    // Parse and validate request body
     const body: ListingsRequest = await request.json();
     const { country, category, city, neighborhood, batch = 1 } = body;
 
-    // Validation: country is required
+    // Validation
     if (!country || country.trim() === "") {
       return NextResponse.json(
         { error: "country parameter is required" },
@@ -32,7 +31,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validation: category is required
     if (!category || category.trim() === "") {
       return NextResponse.json(
         { error: "category parameter is required" },
@@ -40,23 +38,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validation: city requires country
-    if (city && !country) {
-      return NextResponse.json(
-        { error: "country is required when city is provided" },
-        { status: 400 }
-      );
-    }
-
-    // Validation: neighborhood requires city
-    if (neighborhood && !city) {
-      return NextResponse.json(
-        { error: "city is required when neighborhood is provided" },
-        { status: 400 }
-      );
-    }
-
-    // Validation: batch must be >= 1
     if (batch < 1) {
       return NextResponse.json(
         { error: "batch must be >= 1" },
@@ -68,7 +49,7 @@ export async function POST(request: Request) {
     const limit = 100;
     const offset = (batch - 1) * limit;
 
-    // Get country_id
+    // Get country_id and category_id
     const { data: countryData, error: countryError } = await adminClient
       .from("countries")
       .select("country_id")
@@ -84,7 +65,6 @@ export async function POST(request: Request) {
 
     const countryId = countryData.country_id.toString();
 
-    // Get category_id
     const { data: categoryData, error: categoryError } = await adminClient
       .from("listing_categories")
       .select("category_id")
@@ -99,79 +79,28 @@ export async function POST(request: Request) {
     }
 
     const categoryId = categoryData.category_id.toString();
+    const tableName = getPublishTableName(countryId, categoryId);
 
-    // Get all subcategories for this category
-    const { data: subcategories, error: subcategoriesError } = await adminClient
-      .from("listing_subcategories")
-      .select("subcategory_id")
+    // Try to ensure the publish table exists (create if it doesn't)
+    try {
+      await adminClient.rpc('create_publish_table', {
+        p_country_id: countryId,
+        p_category_id: categoryId,
+      });
+    } catch (rpcError: any) {
+      // Ignore errors - table might already exist or function might not be available
+      console.log('Note: Could not create publish table (might already exist):', rpcError);
+    }
+
+    // Build query on publish table
+    let query = adminClient
+      .from(tableName)
+      .select("*")
+      .eq("country_id", countryId)
       .eq("category_id", categoryId);
 
-    if (subcategoriesError) {
-      console.error("Error fetching subcategories:", subcategoriesError);
-      return NextResponse.json(
-        { error: "Failed to fetch subcategories" },
-        { status: 500 }
-      );
-    }
-
-    const subcategoryIds = subcategories?.map((s: any) => s.subcategory_id.toString()) || [];
-
-    // If no subcategories exist for this category, return empty result
-    if (subcategoryIds.length === 0) {
-      return NextResponse.json({
-        listings: [],
-        batch,
-        count: 0,
-        total: 0,
-      }, { status: 200 });
-    }
-
-    // Build filter chain based on hierarchy
-    let listingIds: string[] = [];
-
-    if (neighborhood) {
-      // Filter by neighborhood (most specific)
-      // 1. Find neighborhood by name
-      const { data: neighborhoodData, error: neighborhoodError } = await adminClient
-        .from("listing_neighborhoods")
-        .select("neighborhood_id, city_id")
-        .ilike("neighborhood_name", neighborhood.trim())
-        .single();
-
-      if (neighborhoodError || !neighborhoodData) {
-        return NextResponse.json(
-          { error: "Neighborhood not found" },
-          { status: 404 }
-        );
-      }
-
-      // 2. Verify city matches if city was provided
-      if (city) {
-        const { data: cityData } = await adminClient
-          .from("listing_cities")
-          .select("city_id, city_name")
-          .eq("city_id", neighborhoodData.city_id)
-          .single();
-
-        if (!cityData || cityData.city_name.toLowerCase() !== city.trim().toLowerCase()) {
-          return NextResponse.json(
-            { error: "Neighborhood does not belong to the specified city" },
-            { status: 400 }
-          );
-        }
-      }
-
-      // 3. Get listing_ids from addresses in this neighborhood
-      const { data: addresses } = await adminClient
-        .from("listing_addresses")
-        .select("listing_id")
-        .eq("neighborhood_id", neighborhoodData.neighborhood_id.toString());
-
-      listingIds = addresses?.map((a: any) => a.listing_id) || [];
-
-    } else if (city) {
-      // Filter by city
-      // 1. Find city by name
+    // Apply city filter if provided
+    if (city) {
       const { data: cityData, error: cityError } = await adminClient
         .from("listing_cities")
         .select("city_id")
@@ -186,80 +115,96 @@ export async function POST(request: Request) {
         );
       }
 
-      // 2. Get neighborhoods in this city
-      const { data: neighborhoods } = await adminClient
-        .from("listing_neighborhoods")
-        .select("neighborhood_id")
-        .eq("city_id", cityData.city_id.toString());
+      query = query.eq("city_id", cityData.city_id.toString());
+    }
 
-      const neighborhoodIds = neighborhoods?.map((n: any) => n.neighborhood_id.toString()) || [];
-
-      if (neighborhoodIds.length === 0) {
-        listingIds = [];
-      } else {
-        // 3. Get listing_ids from addresses in these neighborhoods
-        const { data: addresses } = await adminClient
-          .from("listing_addresses")
-          .select("listing_id")
-          .in("neighborhood_id", neighborhoodIds);
-
-        listingIds = addresses?.map((a: any) => a.listing_id) || [];
+    // Apply neighborhood filter if provided
+    if (neighborhood) {
+      if (!city) {
+        return NextResponse.json(
+          { error: "city is required when neighborhood is provided" },
+          { status: 400 }
+        );
       }
 
-    } else {
-      // Filter by country only
-      // 1. Get cities in country
-      const { data: cities } = await adminClient
-        .from("listing_cities")
-        .select("city_id")
-        .eq("country_id", countryId);
+      const { data: neighborhoodData, error: neighborhoodError } = await adminClient
+        .from("listing_neighborhoods")
+        .select("neighborhood_id, city_id")
+        .ilike("neighborhood_name", neighborhood.trim())
+        .single();
 
-      const cityIds = cities?.map((c: any) => c.city_id.toString()) || [];
+      if (neighborhoodError || !neighborhoodData) {
+        return NextResponse.json(
+          { error: "Neighborhood not found" },
+          { status: 404 }
+        );
+      }
 
-      if (cityIds.length === 0) {
-        listingIds = [];
-      } else {
-        // 2. Get neighborhoods in those cities
-        const { data: neighborhoods } = await adminClient
-          .from("listing_neighborhoods")
-          .select("neighborhood_id")
-          .in("city_id", cityIds);
+      // Verify neighborhood belongs to city
+      if (city) {
+        const { data: cityData } = await adminClient
+          .from("listing_cities")
+          .select("city_id")
+          .ilike("city_name", city.trim())
+          .eq("country_id", countryId)
+          .single();
 
-        const neighborhoodIds = neighborhoods?.map((n: any) => n.neighborhood_id.toString()) || [];
-
-        if (neighborhoodIds.length === 0) {
-          listingIds = [];
-        } else {
-          // 3. Get listing_ids from addresses in those neighborhoods
-          const { data: addresses } = await adminClient
-            .from("listing_addresses")
-            .select("listing_id")
-            .in("neighborhood_id", neighborhoodIds);
-
-          listingIds = addresses?.map((a: any) => a.listing_id) || [];
+        if (cityData?.city_id.toString() !== neighborhoodData.city_id.toString()) {
+          return NextResponse.json(
+            { error: "Neighborhood does not belong to the specified city" },
+            { status: 400 }
+          );
         }
       }
+
+      query = query.eq("neighborhood_id", neighborhoodData.neighborhood_id.toString());
     }
 
-    // If no listings match, return empty result
-    if (listingIds.length === 0) {
-      return NextResponse.json({
-        listings: [],
-        batch,
-        count: 0,
-        total: 0,
-      }, { status: 200 });
-    }
-
-    // Get total count (for pagination info) - filter by category via subcategories
-    const { count: totalCount, error: countError } = await adminClient
-      .from("listings")
+    // Get total count - clone the query for count
+    const countQuery = adminClient
+      .from(tableName)
       .select("*", { count: "exact", head: true })
-      .eq("status", "active")
-      .in("listing_id", listingIds)
-      .in("subcategory_id", subcategoryIds);
+      .eq("country_id", countryId)
+      .eq("category_id", categoryId);
+
+    if (city) {
+      const { data: cityData } = await adminClient
+        .from("listing_cities")
+        .select("city_id")
+        .ilike("city_name", city.trim())
+        .eq("country_id", countryId)
+        .single();
+
+      if (cityData) {
+        countQuery.eq("city_id", cityData.city_id.toString());
+      }
+    }
+
+    if (neighborhood) {
+      const { data: neighborhoodData } = await adminClient
+        .from("listing_neighborhoods")
+        .select("neighborhood_id")
+        .ilike("neighborhood_name", neighborhood.trim())
+        .single();
+
+      if (neighborhoodData) {
+        countQuery.eq("neighborhood_id", neighborhoodData.neighborhood_id.toString());
+      }
+    }
+
+    const { count: total, error: countError } = await countQuery;
 
     if (countError) {
+      // If table doesn't exist, return empty result (cache not built yet)
+      if (countError.code === 'PGRST116' || countError.code === 'PGRST205' || countError.message.includes('does not exist') || countError.message.includes('schema cache')) {
+        console.log(`Publish table ${tableName} does not exist yet. Returning empty results.`);
+        return NextResponse.json({
+          listings: [],
+          batch,
+          count: 0,
+          total: 0,
+        }, { status: 200 });
+      }
       console.error("Error counting listings:", countError);
       return NextResponse.json(
         { error: "Failed to count listings" },
@@ -267,131 +212,49 @@ export async function POST(request: Request) {
       );
     }
 
-    const total = totalCount || 0;
-
-    // Get paginated listings ordered by title - filter by category via subcategories
-    const { data: listings, error: listingsError } = await adminClient
-      .from("listings")
-      .select(`
-        listing_id,
-        description,
-        title,
-        price,
-        thumbnail,
-        subcategory_id
-      `)
-      .eq("status", "active")
-      .in("listing_id", listingIds)
-      .in("subcategory_id", subcategoryIds)
+    // Get paginated results
+    const { data: listings, error: listingsError } = await query
       .order("title", { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (listingsError) {
+      // If table doesn't exist, return empty result (cache not built yet)
+      if (listingsError.code === 'PGRST116' || listingsError.code === 'PGRST205' || listingsError.message.includes('does not exist') || listingsError.message.includes('schema cache')) {
+        console.log(`Publish table ${tableName} does not exist yet. Returning empty results.`);
+        return NextResponse.json({
+          listings: [],
+          batch,
+          count: 0,
+          total: 0,
+        }, { status: 200 });
+      }
       console.error("Error fetching listings:", listingsError);
-    return NextResponse.json(
+      return NextResponse.json(
         { error: "Failed to fetch listings" },
         { status: 500 }
       );
     }
 
-    if (!listings || listings.length === 0) {
-      return NextResponse.json({
-        listings: [],
-        batch,
-        count: 0,
-        total,
-      }, { status: 200 });
-    }
-
-    // Transform listings with all related data
-    const transformedListings = await Promise.all(
-      listings.map(async (listing: any) => {
-        // Get address data
-        const { data: address } = await adminClient
-          .from("listing_addresses")
-          .select("coordinates, neighborhood_id")
-          .eq("listing_id", listing.listing_id)
-          .single();
-
-        let neighborhood = null;
-        let city = null;
-        let country = null;
-
-        if (address?.neighborhood_id) {
-          const { data: neighborhoodData } = await adminClient
-            .from("listing_neighborhoods")
-            .select("neighborhood_name, city_id")
-            .eq("neighborhood_id", address.neighborhood_id)
-            .single();
-
-          neighborhood = neighborhoodData?.neighborhood_name || null;
-
-          if (neighborhoodData?.city_id) {
-            const { data: cityData } = await adminClient
-              .from("listing_cities")
-              .select("city_name, country_id")
-              .eq("city_id", neighborhoodData.city_id)
-              .single();
-
-            city = cityData?.city_name || null;
-
-            if (cityData?.country_id) {
-              const { data: countryData } = await adminClient
-                .from("countries")
-                .select("country_name")
-                .eq("country_id", cityData.country_id)
-                .single();
-
-              country = countryData?.country_name || null;
-            }
-          }
-        }
-
-        // Get subcategory and category
-        let subcategory = null;
-        let category = null;
-
-        if (listing.subcategory_id) {
-          const { data: subcategoryData } = await adminClient
-            .from("listing_subcategories")
-            .select("subcategory_name, category_id")
-            .eq("subcategory_id", listing.subcategory_id)
-            .single();
-
-          subcategory = subcategoryData?.subcategory_name || null;
-
-          if (subcategoryData?.category_id) {
-            const { data: categoryData } = await adminClient
-              .from("listing_categories")
-              .select("category_name")
-              .eq("category_id", subcategoryData.category_id)
-              .single();
-
-            category = categoryData?.category_name || null;
-          }
-        }
-
-        return {
-          listing_id: listing.listing_id,
-          description: listing.description,
-          title: listing.title,
-          subcategory,
-          category,
-          price: listing.price,
-          thumbnail: listing.thumbnail,
-          coordinates: address?.coordinates || null,
-          neighborhood,
-          city,
-          country,
-        };
-      })
-    );
+    // Transform to match API response format (remove internal IDs)
+    const transformedListings = (listings || []).map((listing: any) => ({
+      listing_id: listing.listing_id,
+      description: listing.description,
+      title: listing.title,
+      subcategory: listing.subcategory,
+      category: listing.category,
+      price: listing.price,
+      thumbnail: listing.thumbnail,
+      coordinates: listing.coordinates,
+      neighborhood: listing.neighborhood,
+      city: listing.city,
+      country: listing.country,
+    }));
 
     return NextResponse.json({
       listings: transformedListings,
       batch,
       count: transformedListings.length,
-      total,
+      total: total || 0,
     }, { status: 200 });
 
   } catch (error) {
